@@ -21,6 +21,8 @@ npm install
 | --- | --- |
 | `npm test` | Lance tous les tests (moteur et interface) |
 | `npm run dev` | Interface locale (Vite) sur http://localhost:5173, accessible depuis l'iPad |
+| `npm run serveur` | Serveur multijoueur (Socket.IO) sur le port 3000, sert aussi `dist/` |
+| `npm start` | Construit l'interface puis lance le serveur : tout est sur http://<IP>:3000 |
 | `npm run build` | Construit l'interface dans `dist/` |
 | `npm run demo -- 2 2026` | Partie automatique entre bots (nb joueurs, graine), affichée dans le terminal |
 
@@ -31,9 +33,10 @@ n'est visible que depuis Windows. Pour l'iPad, deux options :
 
 - **WSL en mode réseau « mirrored »** (Windows 11) : dans `%UserProfile%\.wslconfig`,
   ajouter `[wsl2]` puis `networkingMode=mirrored`, lancer `wsl --shutdown`,
-  puis ouvrir `http://<IP Wi-Fi du PC>:5173` sur l'iPad.
+  puis ouvrir `http://<IP Wi-Fi du PC>:3000` (`npm start`) ou `:5173` (`npm run dev`) sur l'iPad.
 - **Redirection de port** (PowerShell administrateur) :
   ```powershell
+  netsh interface portproxy add v4tov4 listenport=3000 listenaddress=0.0.0.0 connectport=3000 connectaddress=<IP WSL>
   netsh interface portproxy add v4tov4 listenport=5173 listenaddress=0.0.0.0 connectport=5173 connectaddress=<IP WSL>
   New-NetFirewallRule -DisplayName "Canopee" -Direction Inbound -LocalPort 5173,3000 -Protocol TCP -Action Allow
   ```
@@ -55,7 +58,11 @@ src/client/         Interface React + SVG
   Accueil.jsx       Réglage de la partie (1 à 4 joueurs, noms, ordinateur, graine)
   PartieLocale.jsx  Partie sur un même écran (tour par tour, bots facultatifs)
   composants/       Table (vue de partie commune local/distant), Plateau, cartes, scores
-tests/              Tests unitaires (moteur) et tests d'interface (jsdom)
+src/serveur/        Serveur multijoueur
+  salles.js         Gestion des salles (codes, joueurs, reconnexion, ordinateurs), sans réseau
+  serveur.js        Express + Socket.IO : relaie les actions, diffuse l'état
+  index.js          Point de lancement
+tests/              Tests unitaires (moteur, salles), d'intégration (serveur) et d'interface (jsdom)
 scripts/demo.js     Démonstration en ligne de commande
 ```
 
@@ -71,6 +78,24 @@ Actions :
 { type: 'poserAnimal', carte: 'aigle-1', ligne: 3, colonne: 4 }
 { type: 'finTour' }
 ```
+
+## Protocole réseau (Socket.IO)
+
+Le serveur garde l'état de chaque partie et valide chaque coup avec le même moteur.
+Après chaque changement, il diffuse `salle:etat` à tous les membres de la salle :
+`{ code, joueurs: [{ nom, connecte, bot, hote }], etat }`. L'état diffusé ne contient pas
+l'ordre du sac ni de la pioche (`nbSac`, `nbPioche` à la place).
+
+| Événement (client → serveur) | Données | Réponse |
+| --- | --- | --- |
+| `salle:creer` | `{ nom }` | `{ ok, code, jeton, index }` |
+| `salle:rejoindre` | `{ code, nom, jeton? }` | `{ ok, code, jeton, index }` (le jeton permet de revenir après une déconnexion) |
+| `salle:ajouterBot` | – | `{ ok }` (hôte, avant le début) |
+| `salle:retirer` | `{ index }` | `{ ok }` (hôte, avant le début) |
+| `salle:demarrer` | `{ graine? }` | `{ ok }` (hôte) |
+| `partie:action` | `{ action }` | `{ ok, erreur? }` |
+
+Les ordinateurs jouent côté serveur. Une salle sans humain connecté est supprimée après une heure.
 
 ## Interface locale
 
@@ -132,3 +157,5 @@ Les scores sont alors calculés pour chaque joueur.
 6. Barème animaux : 2 pts par cube + 3 pts de bonus à la clôture.
 7. Fin de partie immédiate (pas de fin de manche pour égaliser le nombre de tours).
 8. Les 12 cartes autres que l'Aigle et la Coccinelle sont des créations.
+9. Serveur : une salle abandonnée (aucun humain connecté) est supprimée après une heure ;
+   la partie démarre avec les joueurs présents (de 1 à 4) ; pas de nouvel arrivant une fois commencée.

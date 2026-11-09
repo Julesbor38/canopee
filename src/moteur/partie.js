@@ -124,6 +124,12 @@ export function appliquerAction(etatInitial, indexJoueur, action) {
   if (etatInitial.phase === PHASES.FIN) return erreur('La partie est terminée');
   if (indexJoueur !== etatInitial.joueurCourant) return erreur("Ce n'est pas votre tour");
   if (!action || typeof action.type !== 'string') return erreur('Action invalide');
+  // Les actions peuvent venir du réseau : les index doivent être des entiers.
+  const champs = { prendreTas: ['tas'], poserPion: ['pion', 'ligne', 'colonne'], poserAnimal: ['ligne', 'colonne'] };
+  if ((champs[action.type] ?? []).some((k) => !Number.isInteger(action[k]))) return erreur('Action invalide');
+  if (action.type === 'prendreTas' && action.carte != null && !Number.isInteger(action.carte)) {
+    return erreur('Action invalide');
+  }
 
   const etat = structuredClone(etatInitial);
   const joueur = etat.joueurs[indexJoueur];
