@@ -55,19 +55,25 @@ export function CarteAnimal({ def, cubesPoses, choisie, possible, onClick }) {
             </g>
           );
         })}
-        {cases.map(({ x, y, i, pile, sommet }) => (
-          <g key={i}>
-            <Pile x={x} y={y - s * 0.08} s={s} pile={pile} />
-            {i === iCible && (
-              <g>
-                <circle cx={x} cy={y - sommet - s * 0.4} r={s * 0.27} fill="#fffdf8" stroke="#7d6f66" strokeWidth={1} />
-                <text x={x} y={y - sommet - s * 0.4} textAnchor="middle" dominantBaseline="central" fontSize={s * 0.32}>
-                  {def.emoji}
-                </text>
-              </g>
-            )}
-          </g>
+        {cases.map(({ x, y, i, pile }) => (
+          <Pile key={i} x={x} y={y - s * 0.08} s={s} pile={pile} />
         ))}
+        {/* l'animal en dernier, pour qu'aucune pile ne le cache */}
+        {cases
+          .filter((k) => k.i === iCible)
+          .map(({ x, y, sommet }) => (
+            <text
+              key="animal"
+              x={x}
+              y={y - s * 0.08 - sommet - s * 0.42}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize={s * 0.5}
+              style={{ filter: 'drop-shadow(0 1px 1.5px rgba(60, 53, 48, 0.55))' }}
+            >
+              {def.emoji}
+            </text>
+          ))}
       </svg>
       <ol className="piste" aria-label={`Gain par animal : ${gains.map((g) => `+${g}`).join(', ')}`}>
         {gains.map((g, i) => {

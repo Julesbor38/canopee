@@ -184,7 +184,7 @@ Une case qui porte un cube animal ne peut plus rien recevoir (ni pion, ni cube).
 | Saumon | rivière + rivière + montagne 2 | +5 +7 +9 | 21 |
 | Aigle | prairie + montagne 3 | +6 +8 | 14 |
 | Souris | bâtiment + bâtiment | +6 +8 | 14 |
-| Abeille | prairie + prairie + bâtiment | +6 +8 +10 | 24 |
+| Abeille | buisson (arbre 1) entouré de 3 prairies, animal sur le buisson | +5 +6 +7 | 18 |
 | Chauve-souris | bâtiment + arbre 2 | +6 +8 +10 | 24 |
 | Papillon | prairie + arbre 1 + bâtiment | +6 +8 +10 | 24 |
 | Bouquetin | montagne 2 + montagne 3 | +7 +9 | 16 |
@@ -213,7 +213,7 @@ Les scores sont alors calculés pour chaque joueur.
 2. Rivières : seule la plus longue compte ; longueur = nombre de cases du groupe connexe.
 3. Cartes : 5 visibles, 1 exemplaire de chaque (30 cartes), 4 cartes en cours maximum, 1 par tour (avec le tas).
 4. Motifs : les 6 rotations sont acceptées ; seule la case cible doit être libre de cube.
-5. Cube animal : posé sur la case la plus à droite du motif.
+5. Cube animal : posé sur la case la plus à droite du motif, sauf si la carte fixe sa case (`cible`) : animaux aquatiques sur la rivière, abeille sur le buisson, renard et papillon sur la prairie, marmotte sur la montagne.
 6. Barème animaux : coûts des cases, supplément de forme et progression (voir ci-dessus).
 7. Fin de partie immédiate (pas de fin de manche pour égaliser le nombre de tours).
 8. Les 28 cartes autres que l'Aigle et la Coccinelle sont des créations.

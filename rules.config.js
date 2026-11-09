@@ -125,7 +125,7 @@ export const CARTES_ANIMAUX = [
     motif: [{ q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'arbre', hauteur: 1 }],
   },
   {
-    id: 'grenouille', nom: 'Grenouille', emoji: '🐸', cubes: 4,
+    id: 'grenouille', nom: 'Grenouille', emoji: '🐸', cubes: 4, cible: 0,
     motif: [{ q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'prairie' }],
   },
   {
@@ -133,14 +133,14 @@ export const CARTES_ANIMAUX = [
     motif: [{ q: 0, r: 0, type: 'montagne', hauteur: 2 }, { q: 1, r: 0, type: 'arbre', hauteur: 3 }],
   },
   {
-    id: 'renard', nom: 'Renard', emoji: '🦊', cubes: 3,
+    id: 'renard', nom: 'Renard', emoji: '🦊', cubes: 3, cible: 0,
     motif: [
       { q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'prairie' },
       { q: 2, r: 0, type: 'arbre', hauteur: 2 },
     ],
   },
   {
-    id: 'loutre', nom: 'Loutre', emoji: '🦦', cubes: 3,
+    id: 'loutre', nom: 'Loutre', emoji: '🦦', cubes: 3, cible: 0,
     motif: [
       { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' },
       { q: 2, r: 0, type: 'arbre', hauteur: 2 },
@@ -165,7 +165,7 @@ export const CARTES_ANIMAUX = [
     motif: [{ q: 0, r: 0, type: 'montagne', hauteur: 1 }, { q: 1, r: 0, type: 'montagne', hauteur: 2 }],
   },
   {
-    id: 'cigogne', nom: 'Cigogne', emoji: '🦩', cubes: 3,
+    id: 'cigogne', nom: 'Cigogne', emoji: '🦩', cubes: 3, cible: 0,
     motif: [{ q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'batiment' }],
   },
   {
@@ -173,14 +173,15 @@ export const CARTES_ANIMAUX = [
     motif: [{ q: 0, r: 0, type: 'arbre', hauteur: 1 }, { q: 1, r: 0, type: 'arbre', hauteur: 2 }],
   },
   {
-    id: 'abeille', nom: 'Abeille', emoji: '🐝', cubes: 3,
+    // buisson fleuri entouré de prairies (comme la carte abeille du jeu de base)
+    id: 'abeille', nom: 'Abeille', emoji: '🐝', cubes: 3, cible: 0,
     motif: [
-      { q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'prairie' },
-      { q: 0, r: 1, type: 'batiment' },
+      { q: 0, r: 0, type: 'arbre', hauteur: 1 }, { q: -1, r: 0, type: 'prairie' },
+      { q: -1, r: 1, type: 'prairie' }, { q: 0, r: 1, type: 'prairie' },
     ],
   },
   {
-    id: 'marmotte', nom: 'Marmotte', emoji: '🐹', cubes: 3,
+    id: 'marmotte', nom: 'Marmotte', emoji: '🐹', cubes: 3, cible: 0,
     motif: [
       { q: 0, r: 0, type: 'montagne', hauteur: 1 }, { q: 1, r: 0, type: 'prairie' },
       { q: 0, r: 1, type: 'prairie' },
@@ -247,14 +248,14 @@ export const CARTES_ANIMAUX = [
     ],
   },
   {
-    id: 'papillon', nom: 'Papillon', emoji: '🦋', cubes: 3,
+    id: 'papillon', nom: 'Papillon', emoji: '🦋', cubes: 3, cible: 0,
     motif: [
       { q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'arbre', hauteur: 1 },
       { q: 0, r: 1, type: 'batiment' },
     ],
   },
   {
-    id: 'saumon', nom: 'Saumon', emoji: '🐟', cubes: 3,
+    id: 'saumon', nom: 'Saumon', emoji: '🐟', cubes: 3, cible: 1,
     motif: [
       { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' },
       { q: 2, r: 0, type: 'montagne', hauteur: 2 },

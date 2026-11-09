@@ -11,7 +11,7 @@ export const COULEURS_AFFICHAGE = {
 };
 
 /** Écrasement vertical de la vue en perspective (1 = vue de dessus). */
-export const INCLINAISON = 0.62;
+export const INCLINAISON = 0.72;
 
 export const SYMBOLES = {
   bleu: '≈',

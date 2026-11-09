@@ -7,6 +7,13 @@ const idDuCube = (uid) => uid.replace(/-[^-]+$/, '');
 /** Épaisseur d'une case du plateau (relative au rayon). */
 const EPAISSEUR = 0.1;
 
+/** Cases de la ligne précédente (plus au fond) que la case (l, c) peut masquer. */
+function derriere(plateau, l, c) {
+  if (l === 0) return [];
+  const cols = l & 1 ? [c, c + 1] : [c - 1, c];
+  return cols.filter((k) => k >= 0 && k < plateau.colonnes).map((k) => plateau.cases[l - 1][k]);
+}
+
 /** Case vide du plateau : petite dalle en relief. */
 function Dalle({ x, y, s }) {
   const h = s * EPAISSEUR;
@@ -39,6 +46,11 @@ export function Plateau({ plateau, s = 34, surbrillance, cibles, surCase, defini
       role="grid"
       aria-label="Plateau"
     >
+      <defs>
+        <filter id="ombre-emoji" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1.2" floodColor="#3c3530" floodOpacity="0.55" />
+        </filter>
+      </defs>
       {/* dessin ligne par ligne, du fond vers l'avant, pour que les piles se recouvrent correctement */}
       {plateau.cases.map((ligne, l) =>
         ligne.map((kase, c) => {
@@ -48,8 +60,9 @@ export function Plateau({ plateau, s = 34, surbrillance, cibles, surCase, defini
           const jouable = surbrillance?.has(cle);
           const cible = cibles?.has(cle);
           const cliquable = (jouable || cible) && surCase;
-          const def = kase.cube && definitions[idDuCube(kase.cube)];
           const { surface, sommet } = construirePile(x, sol, s, kase.pile);
+          // une pile haute devient translucide si elle cache une case occupée juste derrière
+          const masque = sommet > s * 0.45 && derriere(plateau, l, c).some((k) => k.pile.length);
           return (
             <g
               key={cle}
@@ -58,18 +71,35 @@ export function Plateau({ plateau, s = 34, surbrillance, cibles, surCase, defini
               onClick={cliquable ? () => surCase(l, c) : undefined}
             >
               <Dalle x={x} y={y} s={s} />
-              <Pile x={x} y={sol} s={s} pile={kase.pile} />
+              <g opacity={masque ? 0.62 : 1}>
+                <Pile x={x} y={sol} s={s} pile={kase.pile} />
+              </g>
               {jouable && <polygon points={pointsHex(x, sol - surface, s * 0.78)} className="halo-jouable" />}
               {cible && <polygon points={pointsHex(x, sol - surface, s * 0.86)} className="halo-cible" />}
-              {kase.cube && (
-                <g pointerEvents="none">
-                  <circle cx={x} cy={sol - sommet - s * 0.18} r={s * 0.36} fill="#fffdf8" stroke="#7d6f66" strokeWidth={1} />
-                  <text x={x} y={sol - sommet - s * 0.18} textAnchor="middle" dominantBaseline="central" fontSize={s * 0.42}>
-                    {def?.emoji ?? '●'}
-                  </text>
-                </g>
-              )}
             </g>
+          );
+        }),
+      )}
+      {/* animaux dessinés en dernier : jamais cachés par une pile située devant */}
+      {plateau.cases.flatMap((ligne, l) =>
+        ligne.map((kase, c) => {
+          if (!kase.cube) return null;
+          const { x, y } = centre(l, c, s);
+          const { sommet } = construirePile(x, y - s * EPAISSEUR, s, kase.pile);
+          const def = definitions[idDuCube(kase.cube)];
+          return (
+            <text
+              key={`cube${l},${c}`}
+              x={x}
+              y={y - s * EPAISSEUR - sommet - s * 0.2}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize={s * 0.55}
+              filter="url(#ombre-emoji)"
+              pointerEvents="none"
+            >
+              {def?.emoji ?? '●'}
+            </text>
           );
         }),
       )}

@@ -20,7 +20,7 @@ describe('Pose d\'un animal dans l\'interface', () => {
     fireEvent.click(carte);
     fireEvent.click(container.querySelector('[data-case="0,1"]'));
     expect(container.querySelector('[role="alert"]')).toBeNull();
-    expect(container.querySelector('[data-case="0,1"]').textContent).toContain('🦅');
+    expect(container.querySelector('.plateau').textContent).toContain('🦅');
     expect(container.textContent).toContain('6 / 14 pts');
   });
 });

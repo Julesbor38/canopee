@@ -13,7 +13,7 @@ import { COULEURS_AFFICHAGE as C, INCLINAISON as K, sommetsHex, teinte, versPoin
 /** Proportions des pièces, relatives au rayon d'une case. */
 const P = {
   rayon: 0.84, // bloc de roche / tuile
-  hauteur: 0.38, // épaisseur d'un niveau
+  hauteur: 0.32, // épaisseur d'un niveau
   plat: 0.14, // épaisseur des tuiles plates
   tronc: 0.28, // rayon d'un tronc
   maison: 0.6, // rayon d'une maison

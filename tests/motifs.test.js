@@ -3,7 +3,7 @@ import { ciblesPossibles, indexCible, occurrences, pileCorrespond } from '../src
 import { CARTES_ANIMAUX } from '../rules.config.js';
 import { creerPlateau } from '../src/moteur/plateau.js';
 import { versAxial, versDecale } from '../src/moteur/hex.js';
-import { G, J, M, R, V, config, plateau } from './aides.js';
+import { B, G, J, M, R, V, config, plateau } from './aides.js';
 
 const carte = (id) => CARTES_ANIMAUX.find((c) => c.id === id);
 const aigle = carte('aigle');
@@ -67,6 +67,21 @@ describe('Coccinelle : prairie accolée à un arbre de taille 1 (5 fois)', () =>
   it('une même prairie peut servir à plusieurs arbres', () => {
     const p = plateau({ '2,2': [J], '2,1': [V], '2,3': [V], '1,2': [V] });
     expect(ciblesPossibles(p, coccinelle, config)).toHaveLength(3);
+  });
+});
+
+describe('Case cible logique', () => {
+  it('les animaux aquatiques se posent sur une rivière', () => {
+    for (const id of ['grenouille', 'loutre', 'martin', 'cigogne', 'castor', 'canard', 'tortue', 'saumon']) {
+      const def = carte(id);
+      expect(def.motif[indexCible(def)].type, id).toBe('riviere');
+    }
+  });
+
+  it('une cible explicite est prioritaire sur la case la plus à droite', () => {
+    const saumon = carte('saumon');
+    const p = plateau({ '2,1': [B], '2,2': [B], '2,3': [G, G] });
+    expect(ciblesPossibles(p, saumon, config)).toEqual([{ ligne: 2, colonne: 2 }]);
   });
 });
 
