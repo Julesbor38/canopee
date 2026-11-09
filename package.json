@@ -1,0 +1,15 @@
+{
+  "name": "canopee",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Canopée — jeu de société numérique de construction de paysages (1 à 4 joueurs)",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "node scripts/demo.js"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

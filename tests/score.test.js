@@ -1,0 +1,131 @@
+import { describe, expect, it } from 'vitest';
+import {
+  pointsRiviere, scoreAnimaux, scoreArbres, scoreBatiments, scoreJoueur, scoreMontagnes,
+  scorePrairies, scoreRivieres,
+} from '../src/moteur/score.js';
+import { CARTES_ANIMAUX } from '../rules.config.js';
+import { B, G, J, M, R, V, config, plateau } from './aides.js';
+
+// Rappel du voisinage (lignes impaires décalées à droite) :
+//  (0,c) touche (0,c±1), (1,c-1), (1,c)
+//  (1,c) touche (1,c±1), (0,c), (0,c+1), (2,c), (2,c+1)
+
+describe('Arbres', () => {
+  it('compte chaque arbre selon sa pile : 1, 3 et 7 points', () => {
+    const p = plateau({
+      '0,0': [V], // vert seul : 1
+      '0,2': [M, V], // vert sur marron : 3
+      '0,4': [M, M, V], // 2 marron + vert : 7
+      '0,6': [M], // tronc sans feuillage : 0
+    });
+    expect(scoreArbres(p, config)).toBe(11);
+  });
+
+  it('des arbres adjacents sont comptés individuellement', () => {
+    const p = plateau({ '0,0': [M, M, V], '0,1': [M, M, V] });
+    expect(scoreArbres(p, config)).toBe(14);
+  });
+});
+
+describe('Montagnes', () => {
+  it("une montagne isolée ne rapporte rien, quelle que soit sa hauteur", () => {
+    expect(scoreMontagnes(plateau({ '3,3': [G, G, G] }), config)).toBe(0);
+  });
+
+  it('chaque montagne accolée rapporte selon sa hauteur : 1, 3, 7', () => {
+    const p = plateau({
+      '0,0': [G], '0,1': [G, G], // 1 + 3
+      '2,4': [G, G, G], '2,5': [G], // 7 + 1
+      '5,0': [G, G], // isolée : 0
+    });
+    expect(scoreMontagnes(p, config)).toBe(12);
+  });
+});
+
+describe('Rivières', () => {
+  const attendus = { 1: 0, 2: 2, 3: 5, 4: 8, 5: 11, 6: 15, 7: 19, 8: 23 };
+  for (const [n, pts] of Object.entries(attendus)) {
+    it(`une rivière de ${n} case(s) rapporte ${pts} points`, () => {
+      const cases = {};
+      for (let c = 0; c < Number(n); c++) cases[`0,${c}`] = [B];
+      expect(scoreRivieres(plateau(cases), config)).toBe(pts);
+    });
+  }
+
+  it('au-delà de 6 cases : +4 points par case supplémentaire', () => {
+    expect(pointsRiviere(6, config)).toBe(15);
+    for (let n = 7; n <= 12; n++) {
+      expect(pointsRiviere(n, config) - pointsRiviere(n - 1, config)).toBe(4);
+    }
+    expect(pointsRiviere(10, config)).toBe(31);
+  });
+
+  it('une rivière peut serpenter sur plusieurs lignes', () => {
+    const p = plateau({ '0,0': [B], '1,0': [B], '2,0': [B], '2,1': [B] });
+    expect(scoreRivieres(p, config)).toBe(8);
+  });
+
+  it('par défaut seule la plus longue rivière compte (configurable)', () => {
+    const p = plateau({ '0,0': [B], '0,1': [B], '0,2': [B], '3,5': [B], '3,6': [B] });
+    expect(scoreRivieres(p, config)).toBe(5);
+    const toutes = structuredClone(config);
+    toutes.scoring.rivieres.seulementLaPlusLongue = false;
+    expect(scoreRivieres(p, toutes)).toBe(7);
+  });
+});
+
+describe('Prairies', () => {
+  it("5 points par groupe d'au moins 2 prairies adjacentes", () => {
+    const p = plateau({
+      '0,0': [J], '0,1': [J], // groupe de 2 : 5
+      '3,3': [J], '3,4': [J], '4,3': [J], // groupe de 3 : 5
+      '5,7': [J], // seule : 0
+    });
+    expect(scorePrairies(p, config)).toBe(10);
+  });
+});
+
+describe('Bâtiments', () => {
+  it('5 points pour un bâtiment de 2 de haut entouré de 3 couleurs différentes', () => {
+    const p = plateau({ '1,1': [G, R], '1,0': [J], '1,2': [B], '0,1': [V] });
+    expect(scoreBatiments(p, config)).toBe(5);
+  });
+
+  it('0 point avec seulement 2 couleurs voisines', () => {
+    const p = plateau({ '1,1': [M, R], '1,0': [J], '1,2': [J], '0,1': [B] });
+    expect(scoreBatiments(p, config)).toBe(0);
+  });
+
+  it("un bâtiment d'1 de haut ne compte pas", () => {
+    const p = plateau({ '1,1': [R], '1,0': [J], '1,2': [B], '0,1': [V] });
+    expect(scoreBatiments(p, config)).toBe(0);
+  });
+
+  it('la couleur prise en compte est celle du sommet des piles voisines', () => {
+    // [M, V] compte comme vert, [G, R] comme rouge
+    const p = plateau({ '1,1': [R, R], '1,0': [M, V], '1,2': [G, R], '0,1': [G] });
+    expect(scoreBatiments(p, config)).toBe(5);
+  });
+});
+
+describe('Cartes animaux', () => {
+  const defs = Object.fromEntries(CARTES_ANIMAUX.map((c) => [c.id, c]));
+  it('2 points par cube posé, +3 à la clôture', () => {
+    expect(scoreAnimaux([{ id: 'aigle', cubesPoses: 2 }], defs, config)).toBe(7);
+    expect(scoreAnimaux([{ id: 'coccinelle', cubesPoses: 3 }], defs, config)).toBe(6);
+    expect(scoreAnimaux([{ id: 'coccinelle', cubesPoses: 5 }], defs, config)).toBe(13);
+  });
+});
+
+describe('Score total', () => {
+  it('additionne toutes les catégories', () => {
+    const defs = Object.fromEntries(CARTES_ANIMAUX.map((c) => [c.id, c]));
+    const joueur = {
+      plateau: plateau({ '0,0': [V], '5,0': [B], '5,1': [B], '3,3': [J], '3,4': [J] }),
+      cartes: [{ id: 'aigle', cubesPoses: 1 }],
+    };
+    expect(scoreJoueur(joueur, defs, config)).toEqual({
+      arbres: 1, montagnes: 0, rivieres: 2, prairies: 5, batiments: 0, animaux: 2, total: 10,
+    });
+  });
+});
