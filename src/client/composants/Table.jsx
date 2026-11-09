@@ -19,8 +19,9 @@ const versCles = (cases) => new Set(cases.map((c) => `${c.ligne},${c.colonne}`))
  * @param {boolean} [props.attente] vrai pendant le tour d'un bot ou d'un joueur distant
  * @param {string|null} [props.erreur]
  * @param {() => void} [props.quitter]
+ * @param {{connecte: boolean}[]} [props.statuts] état de connexion des joueurs (mode distant)
  */
-export function Table({ etat, envoyer, moi = null, attente = false, erreur, quitter }) {
+export function Table({ etat, envoyer, moi = null, attente = false, erreur, quitter, statuts }) {
   const courant = etat.joueurCourant;
   const actif = !attente && etat.phase !== PHASES.FIN && (moi === null || moi === courant);
   const [carteChoisie, setCarteChoisie] = useState(null);
@@ -118,7 +119,7 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
             ))}
           </div>
           <h2>
-            Cartes animaux <small>({etat.pioche.length} en pioche)</small>
+            Cartes animaux <small>({etat.nbPioche ?? etat.pioche.length} en pioche)</small>
           </h2>
           <div className="cartes-liste">
             {etat.cartesVisibles.map((carte, i) =>
@@ -156,7 +157,8 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
                 onClick={() => setPlateauVu(i)}
               >
                 {j.nom}
-                {moi === i ? ' (vous)' : ''} · {scores[i].total} pts
+                {moi === i ? ' (vous)' : ''}
+                {statuts && !statuts[i]?.bot && !statuts[i]?.connecte ? ' (déconnecté)' : ''} · {scores[i].total} pts
               </button>
             ))}
           </div>

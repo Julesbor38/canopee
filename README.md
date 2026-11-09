@@ -57,6 +57,7 @@ src/moteur/         Moteur de jeu en JavaScript pur (Node.js et navigateur)
 src/client/         Interface React + SVG
   Accueil.jsx       Réglage de la partie (1 à 4 joueurs, noms, ordinateur, graine)
   PartieLocale.jsx  Partie sur un même écran (tour par tour, bots facultatifs)
+  PartieDistante.jsx Partie à distance : choix de salle, salle d'attente, partie (Socket.IO)
   composants/       Table (vue de partie commune local/distant), Plateau, cartes, scores
 src/serveur/        Serveur multijoueur
   salles.js         Gestion des salles (codes, joueurs, reconnexion, ordinateurs), sans réseau
@@ -105,6 +106,25 @@ Les ordinateurs jouent côté serveur. Une salle sans humain connecté est suppr
 4. Quand un motif est réalisé, la carte s'éclaire en orange : la toucher, puis toucher la case
    cible (pointillés) pour poser le cube.
 5. « Fin du tour » une fois les 3 pions posés. Les onglets permettent de voir les autres plateaux.
+
+## Interface distante
+
+1. Lancer `npm start` sur le PC, ouvrir `http://<IP>:3000` sur chaque appareil.
+2. « Jouer à distance » → saisir son nom → « Créer une salle ». Un code de 4 lettres s'affiche,
+   avec un lien `http://<IP>:3000/?salle=CODE` à partager.
+3. Les autres joueurs saisissent le code (ou ouvrent le lien) et « Rejoindre ».
+4. L'hôte peut ajouter des ordinateurs, retirer des joueurs, puis « Lancer la partie ».
+5. Chacun joue sur son appareil quand c'est son tour ; les autres plateaux restent consultables.
+   Après un rechargement de page ou une coupure réseau, l'appareil reprend automatiquement sa place.
+
+## Démonstration rapide
+
+```bash
+npm install
+npm test                 # 78 tests verts
+npm run demo -- 4 2026   # partie automatique à 4 dans le terminal
+npm start                # http://localhost:3000 (local et distant)
+```
 
 ## Règles implémentées
 
@@ -159,3 +179,5 @@ Les scores sont alors calculés pour chaque joueur.
 8. Les 12 cartes autres que l'Aigle et la Coccinelle sont des créations.
 9. Serveur : une salle abandonnée (aucun humain connecté) est supprimée après une heure ;
    la partie démarre avec les joueurs présents (de 1 à 4) ; pas de nouvel arrivant une fois commencée.
+10. Mode distant : la session (salle + jeton) est mémorisée dans le navigateur pour la reprise ;
+    l'hôte est le créateur de la salle et ne peut pas être remplacé.
