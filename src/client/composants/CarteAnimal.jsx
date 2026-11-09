@@ -1,17 +1,22 @@
 import { indexCible } from '../../moteur/motifs.js';
-import { centreAxial, pileDuMotif, pointsHex } from '../geometrie.js';
-import { Pile } from './Pile.jsx';
+import { centreAxial, pileDuMotif, pointsHex, sommetsHex, versPoints } from '../geometrie.js';
+import { construirePile, Pile } from './Pile.jsx';
 
-/** Carte animal : nom, motif dessiné, progression des cubes. */
+/** Carte animal : nom, motif dessiné en perspective, progression des cubes. */
 export function CarteAnimal({ def, cubesPoses, choisie, possible, onClick, compacte = false }) {
-  const s = compacte ? 11 : 14;
-  const pts = def.motif.map((m) => centreAxial(m.q, m.r, s));
-  const xs = pts.map((p) => p.x);
-  const ys = pts.map((p) => p.y);
-  const minX = Math.min(...xs) - s * 1.1;
-  const minY = Math.min(...ys) - s * 1.6;
-  const l = Math.max(...xs) - minX + s * 1.1;
-  const h = Math.max(...ys) - minY + s * 1.1;
+  const s = compacte ? 19 : 22;
+  // ordre de dessin : du fond vers l'avant, puis de gauche à droite
+  const cases = def.motif
+    .map((m, i) => {
+      const p = centreAxial(m.q, m.r, s);
+      const pile = pileDuMotif(m);
+      return { ...p, i, pile, sommet: construirePile(p.x, p.y, s, pile).sommet };
+    })
+    .sort((a, b) => a.y - b.y || a.x - b.x);
+  const minX = Math.min(...cases.map((c) => c.x)) - s * 1.05;
+  const maxX = Math.max(...cases.map((c) => c.x)) + s * 1.05;
+  const minY = Math.min(...cases.map((c) => c.y - c.sommet)) - s * 0.75;
+  const maxY = Math.max(...cases.map((c) => c.y)) + s * 0.75;
   const iCible = indexCible(def);
   const classes = ['carte'];
   if (choisie) classes.push('choisie');
@@ -25,19 +30,28 @@ export function CarteAnimal({ def, cubesPoses, choisie, possible, onClick, compa
       <div className="carte-titre">
         <span className="carte-emoji">{def.emoji}</span> {def.nom}
       </div>
-      <svg width={l} height={h} viewBox={`${minX} ${minY} ${l} ${h}`}>
-        {def.motif.map((m, i) => (
+      <svg width={maxX - minX} height={maxY - minY} viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}>
+        {cases.map(({ x, y }, k) => {
+          const h = s * 0.08;
+          const haut = sommetsHex(x, y - h, s * 0.97);
+          const bas = sommetsHex(x, y, s * 0.97);
+          return (
+            <g key={`d${k}`}>
+              <polygon points={versPoints([haut[4], haut[3], haut[2], haut[1], haut[0], bas[0], bas[1], bas[2], bas[3], bas[4]])} className="dalle-cote" />
+              <polygon points={pointsHex(x, y - h, s * 0.97)} className="fond-case" />
+            </g>
+          );
+        })}
+        {cases.map(({ x, y, i, pile, sommet }) => (
           <g key={i}>
-            <polygon points={pointsHex(pts[i].x, pts[i].y, s * 0.97)} fill="#efe4c8" stroke="#b9a77c" />
-            <Pile x={pts[i].x} y={pts[i].y} s={s} pile={pileDuMotif(m)} />
+            <Pile x={x} y={y - s * 0.08} s={s} pile={pile} />
             {i === iCible && (
-              <circle
-                cx={pts[i].x}
-                cy={pts[i].y - (pileDuMotif(m).length - 1) * s * 0.2 - s * 0.9}
-                r={s * 0.28}
-                fill="#fffaf0"
-                stroke="#3b2f2f"
-              />
+              <g>
+                <circle cx={x} cy={y - sommet - s * 0.42} r={s * 0.26} fill="#fffdf8" stroke="#7d6f66" strokeWidth={1} />
+                <text x={x} y={y - sommet - s * 0.42} textAnchor="middle" dominantBaseline="central" fontSize={s * 0.3}>
+                  {def.emoji}
+                </text>
+              </g>
             )}
           </g>
         ))}

@@ -114,7 +114,7 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
                 onClick={() => prendreTas(i)}
                 aria-label={`Tas ${i + 1}`}
               >
-                {tas ? tas.map((c, k) => <Pion key={k} couleur={c} taille={16} />) : <span className="vide">vide</span>}
+                {tas ? tas.map((c, k) => <Pion key={k} couleur={c} taille={24} />) : <span className="vide">vide</span>}
               </button>
             ))}
           </div>
@@ -187,7 +187,7 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
                     setPlateauVu(courant);
                   }}
                 >
-                  <Pion couleur={c} taille={20} choisi={k === pionChoisi && !animalChoisi} />
+                  <Pion couleur={c} taille={28} choisi={k === pionChoisi && !animalChoisi} />
                 </button>
               ))}
               <button

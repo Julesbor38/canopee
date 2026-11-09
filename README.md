@@ -54,7 +54,7 @@ src/moteur/         Moteur de jeu en JavaScript pur (Node.js et navigateur)
   partie.js         État de partie et actions (creerPartie, appliquerAction)
   hasard.js         Générateur pseudo-aléatoire à graine
   bot.js            Joueur automatique simple
-src/client/         Interface React + SVG
+src/client/         Interface React + SVG (rendu en perspective, teintes pastel)
   Accueil.jsx       Réglage de la partie (1 à 4 joueurs, noms, ordinateur, graine)
   PartieLocale.jsx  Partie sur un même écran (tour par tour, bots facultatifs)
   PartieDistante.jsx Partie à distance : choix de salle, salle d'attente, partie (Socket.IO)
