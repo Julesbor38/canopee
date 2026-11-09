@@ -62,8 +62,22 @@ const config = {
     prairies: { pointsParGroupe: 5, tailleMin: 2 },
     // Bâtiments : points si le bâtiment (2 de haut) touche au moins couleursMin couleurs différentes
     batiments: { points: 5, couleursMin: 3, hauteurMin: 2 },
-    // TODO: à valider — barème des cartes animaux
-    animaux: { parCube: 2, bonusCloture: 3 },
+    // TODO: à valider — barème des cartes animaux, calculé selon la difficulté du motif.
+    // Difficulté = somme des coûts des cases du motif (+ un supplément pour les formes à 3 cases).
+    // Le n-ième cube rapporte round(difficulté × (1 + progression × (n − 1))) points :
+    // les derniers cubes, plus durs à placer sur un plateau qui se remplit, valent davantage.
+    // Une carte peut aussi fixer sa piste à la main avec `points: [...]` (scores cumulés).
+    animaux: {
+      couts: {
+        prairie: 1,
+        riviere: 1,
+        montagne: { 1: 1, 2: 2.5, 3: 4.5 }, // selon la hauteur
+        arbre: { 1: 1, 2: 2.5, 3: 4.5 }, // selon la hauteur
+        batiment: 3, // 2 pions dont un rouge (le plus rare)
+      },
+      supplementForme3: 0.5, // contrainte d'alignement / de triangle
+      progression: 0.15,
+    },
   },
 
   cartes: {

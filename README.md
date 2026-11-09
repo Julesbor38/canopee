@@ -121,7 +121,7 @@ Les ordinateurs jouent côté serveur. Une salle sans humain connecté est suppr
 
 ```bash
 npm install
-npm test                 # 78 tests verts
+npm test                 # 81 tests verts
 npm run demo -- 4 2026   # partie automatique à 4 dans le terminal
 npm start                # http://localhost:3000 (local et distant)
 ```
@@ -157,7 +157,29 @@ Une case qui porte un cube animal ne peut plus rien recevoir (ni pion, ni cube).
 - **Prairies** : 5 pts par groupe d'au moins 2 prairies adjacentes.
 - **Bâtiments** : 5 pts par bâtiment de 2 de haut touchant au moins 3 couleurs différentes
   (couleur du sommet des piles voisines).
-- **Cartes animaux** : 2 pts par cube posé, +3 pts quand la carte est terminée.
+- **Cartes animaux** : chaque carte a sa piste de points (score cumulé après chaque animal),
+  calculée selon la difficulté du motif. La carte rapporte la dernière valeur couverte.
+
+| Carte | Motif | Piste |
+| --- | --- | --- |
+| Coccinelle | prairie + arbre 1 | 2 / 4 / 7 / 10 / 13 |
+| Grenouille | rivière + prairie | 2 / 4 / 7 / 10 |
+| Martin-pêcheur | 3 rivières alignées | 4 / 8 / 13 |
+| Chamois | montagne 1 + montagne 2 | 4 / 8 / 13 / 18 |
+| Écureuil | arbre 1 + arbre 2 | 4 / 8 / 13 / 18 |
+| Marmotte | montagne 1 + 2 prairies (triangle) | 4 / 8 / 13 |
+| Hérisson | bâtiment + prairie | 4 / 9 / 14 / 20 |
+| Cigogne | rivière + bâtiment | 4 / 9 / 14 |
+| Renard | 2 prairies + arbre 2 alignés | 5 / 11 / 18 |
+| Loutre | 2 rivières + arbre 2 alignés | 5 / 11 / 18 |
+| Aigle | prairie + montagne 3 | 6 / 12 |
+| Abeille | 2 prairies + bâtiment (triangle) | 6 / 12 / 19 |
+| Ours | montagne 2 + arbre 3 | 7 / 15 / 24 |
+| Chouette | arbre 3 + arbre 3 | 9 / 19 |
+
+  Difficulté = somme des coûts des cases (prairie, rivière : 1 ; montagne / arbre de hauteur
+  1, 2, 3 : 1 ; 2,5 ; 4,5 ; bâtiment : 3) + 0,5 pour une forme à 3 cases. Le n-ième animal
+  rapporte arrondi(difficulté × (1 + 0,15 × (n − 1))). Tout est réglable dans `rules.config.js`.
 
 ### Cartes animaux
 Chaque carte décrit un motif (positions relatives + type de pile exact) et un nombre
@@ -174,7 +196,7 @@ Les scores sont alors calculés pour chaque joueur.
 3. Cartes : 5 visibles, 2 exemplaires de chaque, 4 cartes en cours maximum, 1 par tour (avec le tas).
 4. Motifs : les 6 rotations sont acceptées ; seule la case cible doit être libre de cube.
 5. Cube animal : posé sur la case la plus à droite du motif.
-6. Barème animaux : 2 pts par cube + 3 pts de bonus à la clôture.
+6. Barème animaux : coûts des cases, supplément de forme et progression (voir ci-dessus).
 7. Fin de partie immédiate (pas de fin de manche pour égaliser le nombre de tours).
 8. Les 12 cartes autres que l'Aigle et la Coccinelle sont des créations.
 9. Serveur : une salle abandonnée (aucun humain connecté) est supprimée après une heure ;

@@ -2,9 +2,13 @@ import { indexCible } from '../../moteur/motifs.js';
 import { centreAxial, pileDuMotif, pointsHex, sommetsHex, versPoints } from '../geometrie.js';
 import { construirePile, Pile } from './Pile.jsx';
 
-/** Carte animal : nom, motif dessiné en perspective, progression des cubes. */
+/** Carte animal : nom, motif dessiné en perspective, piste de points.
+ *  `def.points` = score cumulé après 1, 2, … n cubes (calculé par le moteur). */
 export function CarteAnimal({ def, cubesPoses, choisie, possible, onClick, compacte = false }) {
-  const s = compacte ? 19 : 22;
+  const s = compacte ? 24 : 27;
+  const piste = def.points ?? [];
+  const enMain = cubesPoses !== undefined;
+  const valeur = enMain && cubesPoses > 0 ? piste[cubesPoses - 1] : 0;
   // ordre de dessin : du fond vers l'avant, puis de gauche à droite
   const cases = def.motif
     .map((m, i) => {
@@ -29,6 +33,17 @@ export function CarteAnimal({ def, cubesPoses, choisie, possible, onClick, compa
     <button type="button" className={classes.join(' ')} onClick={onClick} disabled={!onClick} aria-pressed={!!choisie}>
       <div className="carte-titre">
         <span className="carte-emoji">{def.emoji}</span> {def.nom}
+      </div>
+      <div className="carte-gain">
+        {enMain ? (
+          <>
+            <strong>{valeur}</strong> pt{valeur > 1 ? 's' : ''} · {cubesPoses}/{def.cubes}
+          </>
+        ) : (
+          <>
+            jusqu'à <strong>{piste[piste.length - 1]}</strong> pts
+          </>
+        )}
       </div>
       <svg width={maxX - minX} height={maxY - minY} viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}>
         {cases.map(({ x, y }, k) => {
@@ -56,11 +71,18 @@ export function CarteAnimal({ def, cubesPoses, choisie, possible, onClick, compa
           </g>
         ))}
       </svg>
-      <div className="carte-cubes">
-        {Array.from({ length: def.cubes }, (_, i) => (
-          <span key={i} className={cubesPoses !== undefined && i < cubesPoses ? 'cube plein' : 'cube'} />
-        ))}
-      </div>
+      <ol className="piste" aria-label={`Points : ${piste.join(', ')}`}>
+        {piste.map((pts, i) => {
+          const couverte = enMain && i < cubesPoses;
+          const prochaine = enMain && i === cubesPoses;
+          return (
+            <li key={i} className={couverte ? 'couverte' : prochaine ? 'prochaine' : ''} title={`${i + 1} animal${i ? 'aux' : ''} : ${pts} pts`}>
+              {couverte ? <span className="piste-cube">{def.emoji}</span> : null}
+              <span className="piste-pts">{pts}</span>
+            </li>
+          );
+        })}
+      </ol>
     </button>
   );
 }

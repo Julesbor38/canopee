@@ -80,14 +80,37 @@ export function scoreBatiments(plateau, config) {
   return total;
 }
 
-/** Cartes animaux : points par cube posé + bonus si la carte est terminée. */
+/** Difficulté d'un motif : somme des coûts de ses cases, plus un supplément de forme. */
+export function difficulteMotif(def, config) {
+  const { couts, supplementForme3 } = config.scoring.animaux;
+  let d = 0;
+  for (const m of def.motif) {
+    const c = couts[m.type];
+    d += typeof c === 'object' ? c[m.hauteur] : c;
+  }
+  if (def.motif.length >= 3) d += supplementForme3;
+  return d;
+}
+
+/** Piste de points d'une carte : score cumulé après 1, 2, … n cubes. */
+export function baremeCarte(def, config) {
+  if (def.points) return def.points;
+  const d = difficulteMotif(def, config);
+  const { progression } = config.scoring.animaux;
+  const piste = [];
+  let total = 0;
+  for (let n = 0; n < def.cubes; n++) {
+    total += Math.max(1, Math.round(d * (1 + progression * n)));
+    piste.push(total);
+  }
+  return piste;
+}
+
+/** Cartes animaux : la carte rapporte la valeur de la dernière case couverte de sa piste. */
 export function scoreAnimaux(cartes, definitions, config) {
-  const { parCube, bonusCloture } = config.scoring.animaux;
   let total = 0;
   for (const carte of cartes) {
-    const def = definitions[carte.id];
-    total += carte.cubesPoses * parCube;
-    if (carte.cubesPoses >= def.cubes) total += bonusCloture;
+    if (carte.cubesPoses > 0) total += baremeCarte(definitions[carte.id], config)[carte.cubesPoses - 1];
   }
   return total;
 }

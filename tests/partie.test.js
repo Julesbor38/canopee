@@ -120,7 +120,7 @@ describe('Pose de cubes animaux via la partie', () => {
     expect(r.ok).toBe(false);
     e = jouer(e, { type: 'poserAnimal', carte: 'aigle-x', ligne: 3, colonne: 3 });
     expect(e.joueurs[0].cartes[0].cubesPoses).toBe(2);
-    expect(calculerScores(e)[0].animaux).toBe(7);
+    expect(calculerScores(e)[0].animaux).toBe(12);
     // carte terminée : plus de cube possible
     expect(appliquerAction(e, 0, { type: 'poserAnimal', carte: 'aigle-x', ligne: 3, colonne: 3 }).erreur)
       .toMatch(/terminée/);
@@ -136,6 +136,7 @@ describe('Pose de cubes animaux via la partie', () => {
     }
     expect(e.joueurs[0].cartes[0].cubesPoses).toBe(5);
     expect(calculerScores(e)[0].animaux).toBe(13);
+    expect(e.definitions.coccinelle.points).toEqual([2, 4, 7, 10, 13]);
   });
 
   it('refuse un cube si le motif est absent', () => {

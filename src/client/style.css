@@ -78,9 +78,9 @@ h2 small { text-transform: none; font-weight: 400; letter-spacing: 0; }
 .erreur { margin: 0.4rem 0; color: var(--alerte); font-weight: 600; }
 .note { color: var(--encre-douce); font-size: 0.9rem; margin: 0.3rem 0; }
 
-.zone-jeu { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(220px, 300px); gap: 1.2rem; align-items: start; }
+.zone-jeu { display: grid; grid-template-columns: minmax(320px, 360px) minmax(0, 1fr) minmax(220px, 300px); gap: 1.2rem; align-items: start; }
 @media (max-width: 1300px) {
-  .zone-jeu { grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); }
+  .zone-jeu { grid-template-columns: minmax(320px, 340px) minmax(0, 1fr); }
   .scores { grid-column: 1 / -1; }
 }
 @media (max-width: 1100px) {
@@ -105,7 +105,7 @@ h2 small { text-transform: none; font-weight: 400; letter-spacing: 0; }
 .cartes-liste { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .carte {
   font: inherit; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
-  padding: 0.45rem 0.6rem 0.5rem; min-width: 100px; border: 2px solid var(--bord); border-radius: 16px;
+  padding: 0.55rem 0.7rem 0.65rem; min-width: 150px; border: 2px solid var(--bord); border-radius: 18px;
   background: linear-gradient(170deg, #fffdfb 0%, var(--lavande) 140%); box-shadow: 0 3px 10px rgba(110, 90, 140, 0.1);
   transition: transform 0.12s, border-color 0.12s;
 }
@@ -114,12 +114,24 @@ h2 small { text-transform: none; font-weight: 400; letter-spacing: 0; }
 .carte.choisie { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(79, 143, 121, 0.25); background: linear-gradient(170deg, #fff 0%, var(--menthe) 120%); }
 .carte.possible { border-color: var(--or); background: linear-gradient(170deg, #fffaf0 0%, var(--peche) 130%); }
 .carte.terminee { opacity: 0.6; }
-.carte.vide { min-height: 90px; border-style: dashed; background: transparent; }
+.carte.vide { min-height: 180px; border-style: dashed; background: transparent; }
 .carte:disabled { cursor: default; }
-.carte-titre { font-size: 0.85rem; font-weight: 700; }
-.carte-cubes { display: flex; gap: 3px; }
-.cube { width: 10px; height: 10px; border: 1.5px solid #8d7f99; border-radius: 3px; background: #fff; }
-.cube.plein { background: #8d7f99; }
+.carte-titre { font-size: 1rem; font-weight: 800; }
+.carte-emoji { font-size: 1.2rem; }
+.carte-gain { font-size: 0.85rem; color: var(--encre-douce); }
+.carte-gain strong { color: var(--accent-fonce); font-size: 1.05rem; }
+.carte svg { margin: 0.1rem 0; }
+
+/* Piste de points : une case par animal, valeur cumulée de la carte */
+.piste { list-style: none; display: flex; gap: 4px; margin: 0.1rem 0 0; padding: 0; }
+.piste li {
+  position: relative; min-width: 28px; height: 30px; padding: 0 4px; display: grid; place-items: center;
+  border-radius: 9px; border: 1.5px solid #cfc3dc; background: #fff; font-weight: 800; font-size: 0.9rem; color: #6d6680;
+}
+.piste li.prochaine { border-color: var(--accent); background: var(--accent-doux); color: var(--accent-fonce); }
+.piste li.couverte { background: #efe8f6; border-color: #b6a7c9; color: #9a91a8; }
+.piste li.couverte .piste-pts { font-size: 0.65rem; position: absolute; bottom: 1px; right: 3px; }
+.piste-cube { font-size: 1rem; line-height: 1; }
 
 .onglets { display: flex; gap: 0.3rem; flex-wrap: wrap; }
 .onglet {
@@ -168,3 +180,7 @@ h2 small { text-transform: none; font-weight: 400; letter-spacing: 0; }
 
 /* Scores : défilement horizontal en dernier recours (écrans très étroits) */
 .scores { overflow-x: auto; }
+
+/* Cartes du centre : grille de 2 colonnes dans la colonne de gauche */
+.centre-table .cartes-liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.centre-table .carte { min-width: 0; }

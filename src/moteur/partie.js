@@ -6,7 +6,7 @@ import configParDefaut, { CARTES_ANIMAUX } from '../../rules.config.js';
 import { melanger, normaliserGraine } from './hasard.js';
 import { ciblesPossibles } from './motifs.js';
 import { casesPossibles, creerPlateau, poser, verifierPose } from './plateau.js';
-import { scoreJoueur } from './score.js';
+import { baremeCarte, scoreJoueur } from './score.js';
 
 export const PHASES = { CHOIX: 'choix', PLACEMENT: 'placement', FIN: 'fin' };
 
@@ -51,7 +51,8 @@ export function creerPartie({ nbJoueurs, graine = Date.now(), noms = [], config,
   for (const [couleur, n] of Object.entries(cfg.sac)) for (let i = 0; i < n; i++) sac.push(couleur);
   rng = melanger(sac, rng);
 
-  const definitions = Object.fromEntries(cartes.map((c) => [c.id, c]));
+  // la piste de points de chaque carte est calculée une fois pour toutes (affichée sur la carte)
+  const definitions = Object.fromEntries(cartes.map((c) => [c.id, { ...c, points: baremeCarte(c, cfg) }]));
   const pioche = [];
   for (let e = 0; e < cfg.cartes.exemplaires; e++) {
     for (const c of cartes) pioche.push({ uid: `${c.id}-${e + 1}`, id: c.id });

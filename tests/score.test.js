@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  pointsRiviere, scoreAnimaux, scoreArbres, scoreBatiments, scoreJoueur, scoreMontagnes,
+  baremeCarte, difficulteMotif, pointsRiviere, scoreAnimaux, scoreArbres, scoreBatiments, scoreJoueur, scoreMontagnes,
   scorePrairies, scoreRivieres,
 } from '../src/moteur/score.js';
 import { CARTES_ANIMAUX } from '../rules.config.js';
@@ -110,10 +110,37 @@ describe('Bâtiments', () => {
 
 describe('Cartes animaux', () => {
   const defs = Object.fromEntries(CARTES_ANIMAUX.map((c) => [c.id, c]));
-  it('2 points par cube posé, +3 à la clôture', () => {
-    expect(scoreAnimaux([{ id: 'aigle', cubesPoses: 2 }], defs, config)).toBe(7);
-    expect(scoreAnimaux([{ id: 'coccinelle', cubesPoses: 3 }], defs, config)).toBe(6);
-    expect(scoreAnimaux([{ id: 'coccinelle', cubesPoses: 5 }], defs, config)).toBe(13);
+
+  it('la carte rapporte la valeur de la dernière case couverte de sa piste', () => {
+    expect(baremeCarte(defs.aigle, config)).toEqual([6, 12]);
+    expect(baremeCarte(defs.coccinelle, config)).toEqual([2, 4, 7, 10, 13]);
+    expect(scoreAnimaux([{ id: 'aigle', cubesPoses: 0 }], defs, config)).toBe(0);
+    expect(scoreAnimaux([{ id: 'aigle', cubesPoses: 2 }], defs, config)).toBe(12);
+    expect(scoreAnimaux([{ id: 'coccinelle', cubesPoses: 3 }], defs, config)).toBe(7);
+  });
+
+  it('un motif plus difficile rapporte davantage par animal', () => {
+    const parAnimal = (id) => baremeCarte(defs[id], config)[0];
+    // prairie + arbre d'1 pion  <  prairie + montagne de 3  <  deux arbres de 3
+    expect(parAnimal('coccinelle')).toBeLessThan(parAnimal('aigle'));
+    expect(parAnimal('aigle')).toBeLessThan(parAnimal('chouette'));
+    expect(difficulteMotif(defs.chouette, config)).toBe(9);
+    // une forme à 3 cases coûte plus que la somme de ses cases
+    expect(difficulteMotif(defs.martin, config)).toBe(3.5);
+  });
+
+  it('chaque piste est croissante, et chaque animal vaut au moins autant que le précédent', () => {
+    for (const def of CARTES_ANIMAUX) {
+      const p = baremeCarte(def, config);
+      expect(p).toHaveLength(def.cubes);
+      for (let i = 1; i < p.length; i++) {
+        expect(p[i] - p[i - 1]).toBeGreaterThanOrEqual(i > 1 ? p[i - 1] - p[i - 2] : p[0]);
+      }
+    }
+  });
+
+  it('une piste fixée à la main sur la carte est prioritaire', () => {
+    expect(baremeCarte({ ...defs.aigle, points: [1, 50] }, config)).toEqual([1, 50]);
   });
 });
 
@@ -125,7 +152,7 @@ describe('Score total', () => {
       cartes: [{ id: 'aigle', cubesPoses: 1 }],
     };
     expect(scoreJoueur(joueur, defs, config)).toEqual({
-      arbres: 1, montagnes: 0, rivieres: 2, prairies: 5, batiments: 0, animaux: 2, total: 10,
+      arbres: 1, montagnes: 0, rivieres: 2, prairies: 5, batiments: 0, animaux: 6, total: 14,
     });
   });
 });
