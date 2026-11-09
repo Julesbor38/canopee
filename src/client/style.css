@@ -183,5 +183,12 @@ h2 small { text-transform: none; font-weight: 400; letter-spacing: 0; }
 /* Scores : défilement horizontal en dernier recours (écrans très étroits) */
 .scores { overflow-x: auto; }
 
-/* Cartes sous le plateau */
-.cartes-disponibles, .cartes-joueur { margin-top: 0.4rem; }
+/* Cartes sous le plateau : la main du joueur d'abord, mise en évidence */
+.cartes-disponibles, .cartes-joueur { margin-top: 0.8rem; }
+.cartes-joueur {
+  padding: 0.4rem 1rem 1rem; border-radius: 20px; border: 2px solid #cfe3da;
+  background: linear-gradient(160deg, rgba(216, 240, 230, 0.75), rgba(230, 220, 247, 0.55));
+}
+.cartes-joueur h2 { color: var(--accent-fonce); }
+.cartes-joueur.animal-possible { border-color: var(--or); box-shadow: 0 0 0 4px rgba(232, 184, 96, 0.25); }
+.indice { text-transform: none; letter-spacing: 0; color: #b07a1c; font-weight: 700; }

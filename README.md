@@ -121,7 +121,7 @@ Les ordinateurs jouent côté serveur. Une salle sans humain connecté est suppr
 
 ```bash
 npm install
-npm test                 # 82 tests verts
+npm test                 # 84 tests verts
 npm run demo -- 4 2026   # partie automatique à 4 dans le terminal
 npm start                # http://localhost:3000 (local et distant)
 ```
@@ -145,8 +145,8 @@ npm start                # http://localhost:3000 (local et distant)
 | Bleu, jaune | case vide uniquement ; rien ne se pose dessus |
 | Gris | vide, 1 ou 2 gris (montagne de 3 maximum) |
 | Marron | vide ou 1 marron |
-| Vert | vide, 1 ou 2 marron ; rien ne se pose dessus |
-| Rouge | vide, 1 gris, 1 marron ou 1 rouge |
+| Vert | vide, 1 ou 2 marron ; seul un bâtiment peut se poser sur un vert seul |
+| Rouge | vide, ou sur un bloc seul au choix : gris, marron, vert ou rouge (le socle n'a pas d'incidence) |
 
 Une case qui porte un cube animal ne peut plus rien recevoir (ni pion, ni cube).
 

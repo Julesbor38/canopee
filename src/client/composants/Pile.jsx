@@ -6,6 +6,7 @@
 //  tronc             : cylindre de bois
 //  feuillage         : houppier arrondi (petit buisson s'il est posé au sol)
 //  bâtiment          : maison avec fenêtres, toit pointu sur le dernier niveau
+//  socle (cartes)    : bloc neutre « au choix » sous un bâtiment
 
 import { COULEURS_AFFICHAGE as C, INCLINAISON as K, sommetsHex, teinte, versPoints } from '../geometrie.js';
 
@@ -201,6 +202,32 @@ export function construirePile(x, y, s, pile) {
         const R = s * (pile.length > 1 ? 0.6 : 0.46);
         elements.push(houppier(i, x, base, R, c));
         e += R * 1.9;
+        sommet = e;
+        break;
+      }
+      case 'socle': {
+        // socle « au choix » des cartes : bloc neutre en pointillés marqué d'un point d'interrogation
+        const h = s * P.hauteur;
+        const r = s * P.rayon;
+        elements.push(
+          <g key={i} strokeDasharray="3 2" opacity={0.9}>
+            {prisme(i, x, base, r, h, '#ece6f2', (haut, bas) => (
+              <text
+                x={x - r * 0.35}
+                y={(haut[3][1] + bas[3][1]) / 2}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={s * 0.32}
+                fontWeight="800"
+                fill="#8d7f99"
+                strokeDasharray="none"
+              >
+                ?
+              </text>
+            ))}
+          </g>,
+        );
+        e += h;
         sommet = e;
         break;
       }

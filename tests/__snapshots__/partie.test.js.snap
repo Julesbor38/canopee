@@ -2,22 +2,22 @@
 
 exports[`Parties complètes déterministes (graine fixe) > partie à 1 joueur(s) 1`] = `
 [
-  211,
+  197,
 ]
 `;
 
 exports[`Parties complètes déterministes (graine fixe) > partie à 2 joueur(s) 1`] = `
 [
-  148,
-  148,
+  134,
+  142,
 ]
 `;
 
 exports[`Parties complètes déterministes (graine fixe) > partie à 4 joueur(s) 1`] = `
 [
-  44,
+  52,
   48,
-  68,
-  50,
+  88,
+  48,
 ]
 `;

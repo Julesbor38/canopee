@@ -176,6 +176,35 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
             </div>
           )}
 
+          <div className={`cartes-joueur${enPlacement && Object.values(ciblesParCarte).some((c) => c.length) ? ' animal-possible' : ''}`}>
+            <h2>
+              {plateauVu === moi || (moi === null && plateauVu === courant) ? 'Vos cartes animaux' : `Cartes de ${vu.nom}`}
+              {enPlacement && Object.values(ciblesParCarte).some((c) => c.length) && (
+                <span className="indice"> — un motif est réalisé : touchez la carte en orange</span>
+              )}
+            </h2>
+            <div className="cartes-liste">
+              {vu.cartes.length === 0 && <p className="note">Aucune carte.</p>}
+              {vu.cartes.map((carte) => {
+                const possibles = plateauVu === courant ? ciblesParCarte[carte.uid]?.length ?? 0 : 0;
+                return (
+                  <CarteAnimal
+                    key={carte.uid}
+                    def={etat.definitions[carte.id]}
+                    cubesPoses={carte.cubesPoses}
+                    possible={enPlacement && possibles > 0}
+                    choisie={animalChoisi === carte.uid}
+                    onClick={
+                      enPlacement && possibles > 0
+                        ? () => setAnimalChoisi(animalChoisi === carte.uid ? null : carte.uid)
+                        : undefined
+                    }
+                  />
+                );
+              })}
+            </div>
+          </div>
+
           <section className="cartes-disponibles" aria-label="Cartes disponibles">
             <h2>
               Cartes animaux disponibles <small>({etat.nbPioche ?? etat.pioche.length} en pioche)</small>
@@ -203,29 +232,6 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
             )}
           </section>
 
-          <div className="cartes-joueur">
-            <h2>Cartes de {vu.nom}</h2>
-            <div className="cartes-liste">
-              {vu.cartes.length === 0 && <p className="note">Aucune carte.</p>}
-              {vu.cartes.map((carte) => {
-                const possibles = plateauVu === courant ? ciblesParCarte[carte.uid]?.length ?? 0 : 0;
-                return (
-                  <CarteAnimal
-                    key={carte.uid}
-                    def={etat.definitions[carte.id]}
-                    cubesPoses={carte.cubesPoses}
-                    possible={enPlacement && possibles > 0}
-                    choisie={animalChoisi === carte.uid}
-                    onClick={
-                      enPlacement && possibles > 0
-                        ? () => setAnimalChoisi(animalChoisi === carte.uid ? null : carte.uid)
-                        : undefined
-                    }
-                  />
-                );
-              })}
-            </div>
-          </div>
         </section>
 
         <aside className="scores" aria-label="Scores">

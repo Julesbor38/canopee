@@ -42,7 +42,9 @@ const config = {
     [GRIS]: [[], [GRIS], [GRIS, GRIS]],
     [MARRON]: [[], [MARRON]],
     [VERT]: [[], [MARRON], [MARRON, MARRON]],
-    [ROUGE]: [[], [GRIS], [MARRON], [ROUGE]],
+    // bâtiment : sur n'importe quel bloc seul (roche, tronc, feuillage ou bâtiment) — le socle
+    // n'a aucune incidence sur les points ni sur les motifs
+    [ROUGE]: [[], [GRIS], [MARRON], [VERT], [ROUGE]],
   },
 
   scoring: {

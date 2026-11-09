@@ -101,6 +101,13 @@ describe('Bâtiments', () => {
     expect(scoreBatiments(p, config)).toBe(0);
   });
 
+  it('le bâtiment compte quel que soit son socle (roche, tronc, feuillage, bâtiment)', () => {
+    const voisins = { '1,0': [J], '1,2': [B], '0,1': [G] };
+    for (const socle of [G, M, V, R]) {
+      expect(scoreBatiments(plateau({ ...voisins, '1,1': [socle, R] }), config)).toBe(5);
+    }
+  });
+
   it('la couleur prise en compte est celle du sommet des piles voisines', () => {
     // [M, V] compte comme vert, [G, R] comme rouge
     const p = plateau({ '1,1': [R, R], '1,0': [M, V], '1,2': [G, R], '0,1': [G] });

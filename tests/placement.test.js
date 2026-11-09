@@ -46,17 +46,19 @@ describe("Règles d'empilement", () => {
     expect(ok(p, 0, 1, V)).toBe(true);
     expect(ok(p, 0, 0, M)).toBe(true);
     expect(ok(p, 0, 1, M)).toBe(false); // 3 marron interdit
-    for (const c of [B, G, M, V, J, R]) {
+    for (const c of [B, G, M, V, J]) {
       expect(ok(p, 0, 2, c)).toBe(false);
       expect(ok(p, 0, 3, c)).toBe(false);
     }
+    expect(ok(p, 0, 3, R)).toBe(false); // un arbre complet ne porte rien
   });
 
-  it('bâtiment : rouge sur un tronc, une roche ou un bâtiment seul', () => {
-    const p = plateau({ '0,0': [G], '0,1': [M], '0,2': [R], '0,3': [G, G], '0,4': [G, R] });
+  it('bâtiment : rouge sur un tronc, un feuillage, une roche ou un bâtiment seul', () => {
+    const p = plateau({ '0,0': [G], '0,1': [M], '0,2': [R], '0,3': [G, G], '0,4': [G, R], '0,5': [V] });
     expect(ok(p, 0, 0, R)).toBe(true);
     expect(ok(p, 0, 1, R)).toBe(true);
     expect(ok(p, 0, 2, R)).toBe(true);
+    expect(ok(p, 0, 5, R)).toBe(true);
     expect(ok(p, 0, 3, R)).toBe(false); // trop haut
     expect(ok(p, 0, 4, R)).toBe(false); // déjà 2 de haut
     expect(ok(p, 0, 2, G)).toBe(false); // rien d'autre que du rouge sur un rouge

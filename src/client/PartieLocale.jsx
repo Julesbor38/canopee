@@ -6,9 +6,11 @@ import { Table } from './composants/Table.jsx';
 const DELAI_BOT = 450; // ms entre deux actions d'un bot
 
 /** Partie sur un seul écran : les joueurs jouent à tour de rôle. */
-export function PartieLocale({ reglages, quitter, delaiBot = DELAI_BOT }) {
-  const [etat, setEtat] = useState(() =>
-    creerPartie({ nbJoueurs: reglages.joueurs.length, graine: reglages.graine, noms: reglages.joueurs.map((j) => j.nom) }),
+export function PartieLocale({ reglages, quitter, delaiBot = DELAI_BOT, etatInitial }) {
+  const [etat, setEtat] = useState(
+    () =>
+      etatInitial ??
+      creerPartie({ nbJoueurs: reglages.joueurs.length, graine: reglages.graine, noms: reglages.joueurs.map((j) => j.nom) }),
   );
   const [erreur, setErreur] = useState(null);
   const tourDeBot = etat.phase !== PHASES.FIN && reglages.joueurs[etat.joueurCourant].bot;

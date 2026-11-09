@@ -91,7 +91,7 @@ export function pileDuMotif(spec) {
     case 'riviere': return ['bleu'];
     case 'montagne': return Array(spec.hauteur).fill('gris');
     case 'arbre': return [...Array(spec.hauteur - 1).fill('marron'), 'vert'];
-    case 'batiment': return ['gris', 'rouge'];
+    case 'batiment': return ['socle', 'rouge']; // socle au choix
     default: return [];
   }
 }

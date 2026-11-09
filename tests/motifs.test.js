@@ -15,7 +15,7 @@ describe('Correspondance des piles', () => {
     expect(pileCorrespond([V], { type: 'arbre', hauteur: 1 })).toBe(true);
     expect(pileCorrespond([M, V], { type: 'arbre', hauteur: 1 })).toBe(false);
     expect(pileCorrespond([M, M, V], { type: 'arbre', hauteur: 3 })).toBe(true);
-    expect(pileCorrespond([G, R], { type: 'batiment' })).toBe(true);
+    for (const socle of [G, M, V, R]) expect(pileCorrespond([socle, R], { type: 'batiment' })).toBe(true);
     expect(pileCorrespond([R], { type: 'batiment' })).toBe(false);
   });
 });
