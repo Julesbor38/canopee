@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { casesPossibles, poser, verifierPose } from '../src/moteur/plateau.js';
 import { voisins } from '../src/moteur/hex.js';
+import { creerPartie } from '../src/moteur/partie.js';
 import { B, G, J, M, R, V, config, plateau } from './aides.js';
 
 const ok = (p, l, c, couleur) => verifierPose(p, l, c, couleur, config).ok;
 
 describe('Géométrie', () => {
-  it('le plateau fait 6 de haut sur 8 de large', () => {
-    const p = plateau();
-    expect(p.cases.length).toBe(6);
-    expect(p.cases.every((l) => l.length === 8)).toBe(true);
+  it('le plateau de jeu fait 5 de haut sur 7 de large', () => {
+    const p = creerPartie({ nbJoueurs: 1, graine: 1 }).joueurs[0].plateau;
+    expect(p.cases.length).toBe(5);
+    expect(p.cases.every((l) => l.length === 7)).toBe(true);
   });
 
   it('une case intérieure a 6 voisins, un coin en a 2 ou 3', () => {

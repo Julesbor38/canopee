@@ -17,18 +17,18 @@ const { BLEU, GRIS, MARRON, VERT, JAUNE, ROUGE } = COULEURS;
 /** Configuration par défaut. */
 const config = {
   plateau: {
-    lignes: 6, // 6 cases de haut
-    colonnes: 8, // 8 cases de large
+    lignes: 5, // 5 cases de haut
+    colonnes: 7, // 7 cases de large
   },
 
-  // TODO: à valider — composition du sac (reprend des proportions proches du jeu d'origine)
+  // Composition du sac (240 pions)
   sac: {
-    [BLEU]: 23,
-    [GRIS]: 23,
-    [MARRON]: 21,
-    [VERT]: 19,
-    [JAUNE]: 19,
-    [ROUGE]: 15,
+    [BLEU]: 46,
+    [GRIS]: 46,
+    [MARRON]: 42,
+    [VERT]: 38,
+    [JAUNE]: 38,
+    [ROUGE]: 30,
   },
 
   nbTas: 5, // 5 tas au centre de la table
@@ -217,6 +217,69 @@ export const CARTES_ANIMAUX = [
     motif: [
       { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' },
       { q: 0, r: 1, type: 'prairie' },
+    ],
+  },
+  {
+    id: 'loup', nom: 'Loup', emoji: '🐺', cubes: 3,
+    motif: [
+      { q: 0, r: 0, type: 'arbre', hauteur: 2 }, { q: 1, r: 0, type: 'montagne', hauteur: 1 },
+      { q: 2, r: 0, type: 'arbre', hauteur: 2 },
+    ],
+  },
+  {
+    id: 'sanglier', nom: 'Sanglier', emoji: '🐗', cubes: 4,
+    motif: [
+      { q: 0, r: 0, type: 'arbre', hauteur: 1 }, { q: 1, r: 0, type: 'prairie' },
+      { q: 2, r: 0, type: 'arbre', hauteur: 1 },
+    ],
+  },
+  {
+    id: 'tortue', nom: 'Tortue', emoji: '🐢', cubes: 3,
+    motif: [
+      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' },
+      { q: 0, r: 1, type: 'montagne', hauteur: 1 },
+    ],
+  },
+  {
+    id: 'escargot', nom: 'Escargot', emoji: '🐌', cubes: 3,
+    motif: [
+      { q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'prairie' }, { q: 2, r: 0, type: 'prairie' },
+    ],
+  },
+  {
+    id: 'papillon', nom: 'Papillon', emoji: '🦋', cubes: 3,
+    motif: [
+      { q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'arbre', hauteur: 1 },
+      { q: 0, r: 1, type: 'batiment' },
+    ],
+  },
+  {
+    id: 'saumon', nom: 'Saumon', emoji: '🐟', cubes: 3,
+    motif: [
+      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' },
+      { q: 2, r: 0, type: 'montagne', hauteur: 2 },
+    ],
+  },
+  {
+    id: 'souris', nom: 'Souris', emoji: '🐭', cubes: 2,
+    motif: [{ q: 0, r: 0, type: 'batiment' }, { q: 1, r: 0, type: 'batiment' }],
+  },
+  {
+    id: 'paon', nom: 'Paon', emoji: '🦚', cubes: 2,
+    motif: [
+      { q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'arbre', hauteur: 3 },
+      { q: 0, r: 1, type: 'prairie' },
+    ],
+  },
+  {
+    id: 'lezard', nom: 'Lézard', emoji: '🦎', cubes: 4,
+    motif: [{ q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'montagne', hauteur: 2 }],
+  },
+  {
+    id: 'serpent', nom: 'Serpent', emoji: '🐍', cubes: 3,
+    motif: [
+      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'prairie' },
+      { q: 2, r: 0, type: 'montagne', hauteur: 1 },
     ],
   },
 ];

@@ -11,13 +11,13 @@ function jouer(etat, action, joueur = etat.joueurCourant) {
 }
 
 describe('Mise en place', () => {
-  it('5 tas de 3 pions, un plateau 6×8 par joueur', () => {
+  it('5 tas de 3 pions, un plateau 5×7 par joueur, sac de 240 pions', () => {
     const e = creerPartie({ nbJoueurs: 3, graine: 1 });
     expect(e.tas).toHaveLength(5);
     expect(e.tas.every((t) => t.length === 3)).toBe(true);
     expect(e.joueurs).toHaveLength(3);
     expect(e.cartesVisibles.filter(Boolean)).toHaveLength(5);
-    expect(e.sac.length).toBe(120 - 15);
+    expect(e.sac.length).toBe(240 - 15);
   });
 
   it('aucune carte en double dans la pioche et les cartes visibles', () => {
@@ -72,7 +72,7 @@ describe('Tour de jeu', () => {
     while (e.main.length) {
       const c = e.main[0];
       const libre = e.joueurs[0].plateau.cases.flat().findIndex((k) => !k.pile.length);
-      e = jouer(e, { type: 'poserPion', pion: 0, ligne: Math.floor(libre / 8), colonne: libre % 8 });
+      e = jouer(e, { type: 'poserPion', pion: 0, ligne: Math.floor(libre / 7), colonne: libre % 7 });
       expect(c).toBeTruthy();
     }
     e = jouer(e, { type: 'finTour' });

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { ciblesPossibles, indexCible, occurrences, pileCorrespond } from '../src/moteur/motifs.js';
 import { CARTES_ANIMAUX } from '../rules.config.js';
+import { creerPlateau } from '../src/moteur/plateau.js';
+import { versAxial, versDecale } from '../src/moteur/hex.js';
 import { G, J, M, R, V, config, plateau } from './aides.js';
 
 const carte = (id) => CARTES_ANIMAUX.find((c) => c.id === id);
@@ -65,5 +67,26 @@ describe('Coccinelle : prairie accolée à un arbre de taille 1 (5 fois)', () =>
   it('une même prairie peut servir à plusieurs arbres', () => {
     const p = plateau({ '2,2': [J], '2,1': [V], '2,3': [V], '1,2': [V] });
     expect(ciblesPossibles(p, coccinelle, config)).toHaveLength(3);
+  });
+});
+
+describe('Toutes les cartes', () => {
+  it('30 cartes uniques, chacune réalisable sur le plateau 5×7 et détectée', () => {
+    expect(CARTES_ANIMAUX).toHaveLength(30);
+    expect(new Set(CARTES_ANIMAUX.map((c) => c.id)).size).toBe(30);
+    const piles = {
+      prairie: () => [J], riviere: () => ['bleu'], batiment: () => [G, R],
+      montagne: (m) => Array(m.hauteur).fill(G), arbre: (m) => [...Array(m.hauteur - 1).fill(M), V],
+    };
+    for (const def of CARTES_ANIMAUX) {
+      // motif posé au centre du plateau de jeu (ligne 2, colonne 2)
+      const p = creerPlateau(config.plateau.lignes, config.plateau.colonnes);
+      const ancre = versAxial(2, 2);
+      for (const m of def.motif) {
+        const { ligne, colonne } = versDecale(ancre.q + m.q, ancre.r + m.r);
+        p.cases[ligne][colonne].pile = piles[m.type](m);
+      }
+      expect(ciblesPossibles(p, def, config).length, def.nom).toBeGreaterThan(0);
+    }
   });
 });

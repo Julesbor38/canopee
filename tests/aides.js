@@ -4,9 +4,10 @@ import config from '../rules.config.js';
 
 export const B = 'bleu', G = 'gris', M = 'marron', V = 'vert', J = 'jaune', R = 'rouge';
 
-/** Plateau 6×8 à partir d'un objet { 'ligne,colonne': [pile] }. */
+/** Plateau d'exemple 6×8 (indépendant de la taille du plateau de jeu, assez large pour
+ *  tracer une rivière de 8 cases en ligne droite) à partir d'un objet { 'ligne,colonne': [pile] }. */
 export function plateau(cases = {}) {
-  const p = creerPlateau(config.plateau.lignes, config.plateau.colonnes);
+  const p = creerPlateau(6, 8);
   for (const [cle, pile] of Object.entries(cases)) {
     const [l, c] = cle.split(',').map(Number);
     p.cases[l][c].pile = [...pile];
