@@ -19,8 +19,25 @@ npm install
 
 | Commande | Rôle |
 | --- | --- |
-| `npm test` | Lance tous les tests du moteur (Vitest) |
+| `npm test` | Lance tous les tests (moteur et interface) |
+| `npm run dev` | Interface locale (Vite) sur http://localhost:5173, accessible depuis l'iPad |
+| `npm run build` | Construit l'interface dans `dist/` |
 | `npm run demo -- 2 2026` | Partie automatique entre bots (nb joueurs, graine), affichée dans le terminal |
+
+### Jouer depuis l'iPad (même réseau local)
+
+Le serveur écoute sur `0.0.0.0`. Sous WSL, l'adresse affichée par Vite (`172.x.x.x`)
+n'est visible que depuis Windows. Pour l'iPad, deux options :
+
+- **WSL en mode réseau « mirrored »** (Windows 11) : dans `%UserProfile%\.wslconfig`,
+  ajouter `[wsl2]` puis `networkingMode=mirrored`, lancer `wsl --shutdown`,
+  puis ouvrir `http://<IP Wi-Fi du PC>:5173` sur l'iPad.
+- **Redirection de port** (PowerShell administrateur) :
+  ```powershell
+  netsh interface portproxy add v4tov4 listenport=5173 listenaddress=0.0.0.0 connectport=5173 connectaddress=<IP WSL>
+  New-NetFirewallRule -DisplayName "Canopee" -Direction Inbound -LocalPort 5173,3000 -Protocol TCP -Action Allow
+  ```
+  L'IP WSL s'obtient avec `hostname -I` dans WSL ; l'IP Wi-Fi du PC avec `ipconfig` sous Windows.
 
 ## Architecture
 
@@ -34,7 +51,11 @@ src/moteur/         Moteur de jeu en JavaScript pur (Node.js et navigateur)
   partie.js         État de partie et actions (creerPartie, appliquerAction)
   hasard.js         Générateur pseudo-aléatoire à graine
   bot.js            Joueur automatique simple
-tests/              Tests unitaires
+src/client/         Interface React + SVG
+  Accueil.jsx       Réglage de la partie (1 à 4 joueurs, noms, ordinateur, graine)
+  PartieLocale.jsx  Partie sur un même écran (tour par tour, bots facultatifs)
+  composants/       Table (vue de partie commune local/distant), Plateau, cartes, scores
+tests/              Tests unitaires (moteur) et tests d'interface (jsdom)
 scripts/demo.js     Démonstration en ligne de commande
 ```
 
@@ -50,6 +71,15 @@ Actions :
 { type: 'poserAnimal', carte: 'aigle-1', ligne: 3, colonne: 4 }
 { type: 'finTour' }
 ```
+
+## Interface locale
+
+1. Choisir le nombre de joueurs, leurs noms, et éventuellement « Ordinateur ».
+2. À son tour : toucher une carte animal (facultatif), puis toucher un tas.
+3. Toucher un pion « à poser » pour le sélectionner : les cases possibles s'éclairent ; toucher une case.
+4. Quand un motif est réalisé, la carte s'éclaire en orange : la toucher, puis toucher la case
+   cible (pointillés) pour poser le cube.
+5. « Fin du tour » une fois les 3 pions posés. Les onglets permettent de voir les autres plateaux.
 
 ## Règles implémentées
 

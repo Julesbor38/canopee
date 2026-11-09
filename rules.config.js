@@ -100,70 +100,70 @@ export default config;
  */
 export const CARTES_ANIMAUX = [
   {
-    id: 'aigle', nom: 'Aigle', cubes: 2,
+    id: 'aigle', nom: 'Aigle', emoji: '🦅', cubes: 2,
     motif: [{ q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'montagne', hauteur: 3 }],
   },
   {
-    id: 'coccinelle', nom: 'Coccinelle', cubes: 5,
+    id: 'coccinelle', nom: 'Coccinelle', emoji: '🐞', cubes: 5,
     motif: [{ q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'arbre', hauteur: 1 }],
   },
   {
-    id: 'grenouille', nom: 'Grenouille', cubes: 4,
+    id: 'grenouille', nom: 'Grenouille', emoji: '🐸', cubes: 4,
     motif: [{ q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'prairie' }],
   },
   {
-    id: 'ours', nom: 'Ours', cubes: 3,
+    id: 'ours', nom: 'Ours', emoji: '🐻', cubes: 3,
     motif: [{ q: 0, r: 0, type: 'montagne', hauteur: 2 }, { q: 1, r: 0, type: 'arbre', hauteur: 3 }],
   },
   {
-    id: 'renard', nom: 'Renard', cubes: 3,
+    id: 'renard', nom: 'Renard', emoji: '🦊', cubes: 3,
     motif: [
       { q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'prairie' },
       { q: 2, r: 0, type: 'arbre', hauteur: 2 },
     ],
   },
   {
-    id: 'loutre', nom: 'Loutre', cubes: 3,
+    id: 'loutre', nom: 'Loutre', emoji: '🦦', cubes: 3,
     motif: [
       { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' },
       { q: 2, r: 0, type: 'arbre', hauteur: 2 },
     ],
   },
   {
-    id: 'herisson', nom: 'Hérisson', cubes: 4,
+    id: 'herisson', nom: 'Hérisson', emoji: '🦔', cubes: 4,
     motif: [{ q: 0, r: 0, type: 'batiment' }, { q: 1, r: 0, type: 'prairie' }],
   },
   {
-    id: 'chouette', nom: 'Chouette', cubes: 2,
+    id: 'chouette', nom: 'Chouette', emoji: '🦉', cubes: 2,
     motif: [{ q: 0, r: 0, type: 'arbre', hauteur: 3 }, { q: 1, r: 0, type: 'arbre', hauteur: 3 }],
   },
   {
-    id: 'martin', nom: 'Martin-pêcheur', cubes: 3,
+    id: 'martin', nom: 'Martin-pêcheur', emoji: '🐦', cubes: 3,
     motif: [
       { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' }, { q: 2, r: 0, type: 'riviere' },
     ],
   },
   {
-    id: 'chamois', nom: 'Chamois', cubes: 4,
+    id: 'chamois', nom: 'Chamois', emoji: '🐐', cubes: 4,
     motif: [{ q: 0, r: 0, type: 'montagne', hauteur: 1 }, { q: 1, r: 0, type: 'montagne', hauteur: 2 }],
   },
   {
-    id: 'cigogne', nom: 'Cigogne', cubes: 3,
+    id: 'cigogne', nom: 'Cigogne', emoji: '🦩', cubes: 3,
     motif: [{ q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'batiment' }],
   },
   {
-    id: 'ecureuil', nom: 'Écureuil', cubes: 4,
+    id: 'ecureuil', nom: 'Écureuil', emoji: '🐿️', cubes: 4,
     motif: [{ q: 0, r: 0, type: 'arbre', hauteur: 1 }, { q: 1, r: 0, type: 'arbre', hauteur: 2 }],
   },
   {
-    id: 'abeille', nom: 'Abeille', cubes: 3,
+    id: 'abeille', nom: 'Abeille', emoji: '🐝', cubes: 3,
     motif: [
       { q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'prairie' },
       { q: 0, r: 1, type: 'batiment' },
     ],
   },
   {
-    id: 'marmotte', nom: 'Marmotte', cubes: 3,
+    id: 'marmotte', nom: 'Marmotte', emoji: '🦫', cubes: 3,
     motif: [
       { q: 0, r: 0, type: 'montagne', hauteur: 1 }, { q: 1, r: 0, type: 'prairie' },
       { q: 0, r: 1, type: 'prairie' },
