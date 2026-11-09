@@ -24,14 +24,12 @@ const versCles = (cases) => new Set(cases.map((c) => `${c.ligne},${c.colonne}`))
 export function Table({ etat, envoyer, moi = null, attente = false, erreur, quitter, statuts }) {
   const courant = etat.joueurCourant;
   const actif = !attente && etat.phase !== PHASES.FIN && (moi === null || moi === courant);
-  const [carteChoisie, setCarteChoisie] = useState(null);
   const [pionChoisi, setPionChoisi] = useState(0);
   const [animalChoisi, setAnimalChoisi] = useState(null);
   const [plateauVu, setPlateauVu] = useState(moi ?? courant);
 
   // Réinitialise les sélections à chaque changement de tour ou de phase
   useEffect(() => {
-    setCarteChoisie(null);
     setAnimalChoisi(null);
     setPionChoisi(0);
     if (moi === null) setPlateauVu(courant);
@@ -45,6 +43,8 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
   const vu = etat.joueurs[plateauVu];
   const enPlacement = actif && etat.phase === PHASES.PLACEMENT && plateauVu === courant;
   const pleinMain = cartesEnCours(joueur, etat.definitions).length >= etat.config.cartes.maxEnMain;
+  const carteDejaPrise = (etat.cartesPrisesCeTour ?? 0) >= etat.config.cartes.maxParTour;
+  const peutPrendreCarte = actif && !pleinMain && !carteDejaPrise;
 
   const ciblesParCarte = useMemo(() => {
     const res = {};
@@ -71,7 +71,7 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
   }
 
   function prendreTas(i) {
-    envoyer({ type: 'prendreTas', tas: i, carte: carteChoisie ?? undefined });
+    envoyer({ type: 'prendreTas', tas: i });
   }
 
   const consigne = !actif
@@ -79,10 +79,12 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
       ? 'Partie terminée'
       : `Au tour de ${joueur.nom}…`
     : etat.phase === PHASES.CHOIX
-      ? 'Choisissez éventuellement une carte animal, puis touchez un tas pour le prendre.'
+      ? 'Touchez un tas pour le prendre. Vous pouvez prendre une carte animal avant ou après.'
       : etat.main.length
         ? `Posez vos pions : ${NOMS_COULEURS[etat.main[pionChoisi]] ?? ''} sélectionné.`
-        : 'Posez des cubes animaux si un motif est réalisé, puis finissez votre tour.';
+        : peutPrendreCarte
+          ? 'Posez des cubes animaux si un motif est réalisé, prenez une carte si vous voulez, puis finissez votre tour.'
+          : 'Posez des cubes animaux si un motif est réalisé, puis finissez votre tour.';
 
   return (
     <div className="table">
@@ -215,21 +217,16 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
                   <CarteAnimal
                     key={carte.uid}
                     def={etat.definitions[carte.id]}
-                    choisie={carteChoisie === i}
-                    onClick={
-                      actif && etat.phase === PHASES.CHOIX && !pleinMain
-                        ? () => setCarteChoisie(carteChoisie === i ? null : i)
-                        : undefined
-                    }
+                    onClick={peutPrendreCarte ? () => envoyer({ type: 'prendreCarte', carte: i }) : undefined}
                   />
                 ) : (
                   <div key={`vide-${i}`} className="carte vide" />
                 ),
               )}
             </div>
-            {actif && etat.phase === PHASES.CHOIX && pleinMain && (
-              <p className="note">Vous avez déjà {etat.config.cartes.maxEnMain} cartes en cours.</p>
-            )}
+            {actif && pleinMain && <p className="note">Vous avez déjà {etat.config.cartes.maxEnMain} cartes en cours.</p>}
+            {actif && !pleinMain && carteDejaPrise && <p className="note">Vous avez déjà pris une carte ce tour-ci.</p>}
+            {peutPrendreCarte && <p className="note">Touchez une carte pour la prendre (une par tour, avant ou après le tas).</p>}
           </section>
 
         </section>

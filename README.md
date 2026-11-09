@@ -75,6 +75,7 @@ Actions :
 
 ```js
 { type: 'prendreTas', tas: 0, carte: 2 }            // carte facultative
+{ type: 'prendreCarte', carte: 2 }                   // avant ou après le tas, une par tour
 { type: 'poserPion', pion: 0, ligne: 3, colonne: 4 } // pion = index dans etat.main
 { type: 'poserAnimal', carte: 'aigle-1', ligne: 3, colonne: 4 }
 { type: 'finTour' }
@@ -101,7 +102,7 @@ Les ordinateurs jouent côté serveur. Une salle sans humain connecté est suppr
 ## Interface locale
 
 1. Choisir le nombre de joueurs, leurs noms, et éventuellement « Ordinateur ».
-2. À son tour : toucher une carte animal (facultatif), puis toucher un tas.
+2. À son tour : toucher un tas ; toucher une carte animal pour la prendre (facultatif, avant ou après le tas).
 3. Toucher un pion « à poser » pour le sélectionner : les cases possibles s'éclairent ; toucher une case.
 4. Quand un motif est réalisé, la carte s'éclaire en orange : la toucher, puis toucher la case
    cible (pointillés) pour poser le cube.
@@ -135,7 +136,7 @@ npm start                # http://localhost:3000 (local et distant)
 - 5 tas de 3 pions au centre, 5 cartes animaux visibles.
 
 ### Tour de jeu
-1. Prendre un tas (il est aussitôt remplacé) et, en même temps, au plus une carte animal visible.
+1. Prendre un tas (il est aussitôt remplacé). À tout moment du tour, avant ou après le tas, on peut prendre au plus une carte animal visible.
 2. Poser les 3 pions sur son plateau ; poser des cubes animaux quand un motif est réalisé.
 3. Finir le tour.
 
@@ -211,7 +212,7 @@ Les scores sont alors calculés pour chaque joueur.
 ## Points non tranchés (valeurs par défaut, `TODO: à valider`)
 1. Composition du sac (240 pions) : 46 bleu, 46 gris, 42 marron, 38 vert, 38 jaune, 30 rouge.
 2. Rivières : seule la plus longue compte ; longueur = nombre de cases du groupe connexe.
-3. Cartes : 5 visibles, 1 exemplaire de chaque (30 cartes), 4 cartes en cours maximum, 1 par tour (avec le tas).
+3. Cartes : 5 visibles, 1 exemplaire de chaque (30 cartes), 4 cartes en cours maximum, 1 par tour, prise avant ou après le tas.
 4. Motifs : les 6 rotations sont acceptées ; seule la case cible doit être libre de cube.
 5. Cube animal : posé sur la case la plus à droite du motif, sauf si la carte fixe sa case (`cible`) : animaux aquatiques sur la rivière, abeille sur le buisson, renard et papillon sur la prairie, marmotte sur la montagne.
 6. Barème animaux : coûts des cases, supplément de forme et progression (voir ci-dessus).

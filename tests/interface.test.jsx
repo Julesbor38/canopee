@@ -39,7 +39,7 @@ describe('Accueil', () => {
 describe('Partie locale', () => {
   it('un tour complet : prendre un tas, poser 3 pions, finir le tour', () => {
     const { container } = render(<PartieLocale reglages={reglages()} quitter={() => {}} />);
-    expect(screen.getByText(/touchez un tas/)).toBeTruthy();
+    expect(screen.getByText(/touchez un tas/i)).toBeTruthy();
 
     fireEvent.click(screen.getByLabelText('Tas 1'));
     const fin = screen.getByText('Fin du tour');
@@ -56,16 +56,29 @@ describe('Partie locale', () => {
     expect(screen.getByRole('tab', { selected: true }).textContent).toMatch(/J2/);
   });
 
-  it('prendre une carte animal avec le tas', () => {
+  it('prendre une carte animal avant le tas, une seule par tour', () => {
     const { container } = render(<PartieLocale reglages={reglages()} quitter={() => {}} />);
     const centre = within(screen.getByLabelText('Centre de la table'));
     const premiereCarte = container.querySelector('.cartes-disponibles .carte');
     const nom = premiereCarte.querySelector('.carte-titre').textContent.trim();
     fireEvent.click(premiereCarte);
-    expect(premiereCarte.getAttribute('aria-pressed')).toBe('true');
-    fireEvent.click(centre.getByLabelText('Tas 2'));
     const cartesJoueur = container.querySelector('.cartes-joueur');
     expect(cartesJoueur.textContent).toContain(nom.replace(/^\S+\s/, ''));
+    // une carte par tour : les autres ne sont plus cliquables
+    expect(container.querySelector('.cartes-disponibles .carte.cliquable')).toBeNull();
+    fireEvent.click(centre.getByLabelText('Tas 2'));
+    expect(container.querySelector('.cartes-disponibles .carte.cliquable')).toBeNull();
+  });
+
+  it('prendre une carte animal après avoir pris le tas', () => {
+    const { container } = render(<PartieLocale reglages={reglages()} quitter={() => {}} />);
+    const centre = within(screen.getByLabelText('Centre de la table'));
+    fireEvent.click(centre.getByLabelText('Tas 1'));
+    const premiereCarte = container.querySelector('.cartes-disponibles .carte.cliquable');
+    expect(premiereCarte).toBeTruthy();
+    const nom = premiereCarte.querySelector('.carte-titre').textContent.trim();
+    fireEvent.click(premiereCarte);
+    expect(container.querySelector('.cartes-joueur').textContent).toContain(nom.replace(/^\S+\s/, ''));
   });
 
   it('une partie entre ordinateurs se termine et affiche le classement', async () => {

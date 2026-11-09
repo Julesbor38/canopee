@@ -44,7 +44,7 @@ describe('Interface distante', () => {
     expect(bastien.queryByText(/Lancer la partie/)).toBeNull();
 
     fireEvent.click(alice.getByText(/Lancer la partie/));
-    await attendre(() => expect(alice.getByText(/touchez un tas/)).toBeTruthy());
+    await attendre(() => expect(alice.getByText(/touchez un tas/i)).toBeTruthy());
     await attendre(() => expect(bastien.getByText(/Au tour de Alice/)).toBeTruthy());
     // Bastien ne peut pas prendre de tas
     expect(bastien.getByLabelText('Tas 1').disabled).toBe(true);
@@ -60,7 +60,7 @@ describe('Interface distante', () => {
     fireEvent.click(alice.getByText('Fin du tour'));
 
     // c'est maintenant à Bastien, sur son appareil
-    await attendre(() => expect(bastien.getByText(/touchez un tas/)).toBeTruthy());
+    await attendre(() => expect(bastien.getByText(/touchez un tas/i)).toBeTruthy());
     await attendre(() => expect(alice.getByText(/Au tour de Bastien/)).toBeTruthy());
     // le plateau d'Alice est visible depuis l'appareil de Bastien
     fireEvent.click(bastien.getByRole('tab', { name: /Alice/ }));

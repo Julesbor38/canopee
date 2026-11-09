@@ -66,6 +66,25 @@ describe('Tour de jeu', () => {
     expect(appliquerAction(e1, 0, { type: 'prendreTas', tas: 1, carte: 0 }).ok).toBe(false);
   });
 
+  it('la carte peut se prendre seule, avant ou après le tas, une par tour', () => {
+    const e0 = creerPartie({ nbJoueurs: 2, graine: 7 });
+    // avant le tas
+    const avant = jouer(e0, { type: 'prendreCarte', carte: 2 });
+    expect(avant.joueurs[0].cartes).toHaveLength(1);
+    expect(avant.phase).toBe(PHASES.CHOIX);
+    expect(appliquerAction(avant, 0, { type: 'prendreCarte', carte: 0 }).erreur).toMatch(/déjà pris une carte/);
+    expect(appliquerAction(avant, 0, { type: 'prendreTas', tas: 0, carte: 0 }).ok).toBe(false);
+    expect(jouer(avant, { type: 'prendreTas', tas: 0 }).phase).toBe(PHASES.PLACEMENT);
+    // après le tas, même une fois les pions posés
+    let e = jouer(e0, { type: 'prendreTas', tas: 0 });
+    for (const [l, c] of [[0, 0], [2, 2], [4, 4]]) e = jouer(e, { type: 'poserPion', pion: 0, ligne: l, colonne: c });
+    e = jouer(e, { type: 'prendreCarte', carte: 1 });
+    expect(e.joueurs[0].cartes[0].id).toBe(e0.cartesVisibles[1].id);
+    // le compteur repart à zéro au tour suivant
+    e = jouer(e, { type: 'finTour' });
+    expect(jouer(e, { type: 'prendreCarte', carte: 0 }).joueurs[1].cartes).toHaveLength(1);
+  });
+
   it('limite le nombre de cartes en cours', () => {
     let e = creerPartie({ nbJoueurs: 1, graine: 7, config: { cartes: { maxEnMain: 1 } } });
     e = jouer(e, { type: 'prendreTas', tas: 0, carte: 0 });

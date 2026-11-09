@@ -77,6 +77,7 @@ export function creerPartie({ nbJoueurs, graine = Date.now(), noms = [], config,
     tour: 1,
     phase: PHASES.CHOIX,
     main: [], // pions à poser ce tour-ci
+    cartesPrisesCeTour: 0,
     finDePartie: null, // { raison, scores }
     journal: [],
   };
@@ -112,10 +113,29 @@ function erreur(message) {
   return { ok: false, erreur: message };
 }
 
+/** Donne au joueur courant la carte visible n° `index`. Renvoie un message d'erreur ou null. */
+function prendreCarteVisible(etat, joueur, index) {
+  const cfg = etat.config;
+  const carte = etat.cartesVisibles[index];
+  if (!carte) return 'Cette carte est indisponible';
+  if ((etat.cartesPrisesCeTour ?? 0) >= cfg.cartes.maxParTour) {
+    return cfg.cartes.maxParTour === 1 ? 'Vous avez déjà pris une carte ce tour-ci' : `Vous avez déjà pris ${cfg.cartes.maxParTour} cartes ce tour-ci`;
+  }
+  if (cartesEnCours(joueur, etat.definitions).length >= cfg.cartes.maxEnMain) {
+    return `Vous avez déjà ${cfg.cartes.maxEnMain} cartes en cours`;
+  }
+  joueur.cartes.push({ ...carte, cubesPoses: 0 });
+  etat.cartesVisibles[index] = piocherCarte(etat);
+  etat.cartesPrisesCeTour = (etat.cartesPrisesCeTour ?? 0) + 1;
+  etat.journal.push(`${joueur.nom} prend la carte ${etat.definitions[carte.id].nom}`);
+  return null;
+}
+
 /**
  * Applique une action du joueur `indexJoueur`.
  * Actions :
  *  { type: 'prendreTas', tas: i, carte?: j }      — prend le tas i (et la carte visible j)
+ *  { type: 'prendreCarte', carte: j }             — prend la carte visible j, avant ou après le tas
  *  { type: 'poserPion', pion: k, ligne, colonne } — pose le k-ième pion de la main
  *  { type: 'poserAnimal', carte: uid, ligne, colonne } — pose un cube sur une case cible
  *  { type: 'finTour' }
@@ -126,7 +146,7 @@ export function appliquerAction(etatInitial, indexJoueur, action) {
   if (indexJoueur !== etatInitial.joueurCourant) return erreur("Ce n'est pas votre tour");
   if (!action || typeof action.type !== 'string') return erreur('Action invalide');
   // Les actions peuvent venir du réseau : les index doivent être des entiers.
-  const champs = { prendreTas: ['tas'], poserPion: ['pion', 'ligne', 'colonne'], poserAnimal: ['ligne', 'colonne'] };
+  const champs = { prendreTas: ['tas'], prendreCarte: ['carte'], poserPion: ['pion', 'ligne', 'colonne'], poserAnimal: ['ligne', 'colonne'] };
   if ((champs[action.type] ?? []).some((k) => !Number.isInteger(action[k]))) return erreur('Action invalide');
   if (action.type === 'prendreTas' && action.carte != null && !Number.isInteger(action.carte)) {
     return erreur('Action invalide');
@@ -142,20 +162,20 @@ export function appliquerAction(etatInitial, indexJoueur, action) {
       const tas = etat.tas[action.tas];
       if (!tas) return erreur('Ce tas est vide ou inexistant');
       if (action.carte !== undefined && action.carte !== null) {
-        const carte = etat.cartesVisibles[action.carte];
-        if (!carte) return erreur('Cette carte est indisponible');
-        if (cartesEnCours(joueur, etat.definitions).length >= cfg.cartes.maxEnMain) {
-          return erreur(`Vous avez déjà ${cfg.cartes.maxEnMain} cartes en cours`);
-        }
-        joueur.cartes.push({ ...carte, cubesPoses: 0 });
-        etat.cartesVisibles[action.carte] = piocherCarte(etat);
-        etat.journal.push(`${joueur.nom} prend la carte ${etat.definitions[carte.id].nom}`);
+        const e = prendreCarteVisible(etat, joueur, action.carte);
+        if (e) return erreur(e);
       }
       etat.main = tas;
       etat.tas[action.tas] = piocherTas(etat); // le tas est aussitôt remplacé
       etat.phase = PHASES.PLACEMENT;
       etat.journal.push(`${joueur.nom} prend le tas ${action.tas + 1} (${tas.join(', ')})`);
       if (!mainJouable(etat)) terminer(etat, `${joueur.nom} ne peut plus poser de pion`);
+      return { ok: true, etat };
+    }
+
+    case 'prendreCarte': {
+      const e = prendreCarteVisible(etat, joueur, action.carte);
+      if (e) return erreur(e);
       return { ok: true, etat };
     }
 
@@ -195,6 +215,7 @@ export function appliquerAction(etatInitial, indexJoueur, action) {
       etat.joueurCourant = (etat.joueurCourant + 1) % etat.joueurs.length;
       if (etat.joueurCourant === 0) etat.tour++;
       etat.phase = PHASES.CHOIX;
+      etat.cartesPrisesCeTour = 0;
       if (etat.tas.every((t) => !t)) terminer(etat, 'Plus aucun tas à prendre');
       return { ok: true, etat };
     }
