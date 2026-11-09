@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  baremeCarte, difficulteMotif, pointsRiviere, scoreAnimaux, scoreArbres, scoreBatiments, scoreJoueur, scoreMontagnes,
+  baremeCarte, difficulteMotif, gainsCarte, pointsRiviere, scoreAnimaux, scoreArbres, scoreBatiments, scoreJoueur, scoreMontagnes,
   scorePrairies, scoreRivieres,
 } from '../src/moteur/score.js';
 import { CARTES_ANIMAUX } from '../rules.config.js';
@@ -112,11 +112,12 @@ describe('Cartes animaux', () => {
   const defs = Object.fromEntries(CARTES_ANIMAUX.map((c) => [c.id, c]));
 
   it('la carte rapporte la valeur de la dernière case couverte de sa piste', () => {
-    expect(baremeCarte(defs.aigle, config)).toEqual([6, 12]);
-    expect(baremeCarte(defs.coccinelle, config)).toEqual([2, 4, 7, 10, 13]);
+    expect(baremeCarte(defs.aigle, config)).toEqual([6, 14]);
+    expect(baremeCarte(defs.coccinelle, config)).toEqual([2, 5, 9, 14, 20]);
+    expect(gainsCarte(defs.coccinelle, config)).toEqual([2, 3, 4, 5, 6]);
     expect(scoreAnimaux([{ id: 'aigle', cubesPoses: 0 }], defs, config)).toBe(0);
-    expect(scoreAnimaux([{ id: 'aigle', cubesPoses: 2 }], defs, config)).toBe(12);
-    expect(scoreAnimaux([{ id: 'coccinelle', cubesPoses: 3 }], defs, config)).toBe(7);
+    expect(scoreAnimaux([{ id: 'aigle', cubesPoses: 2 }], defs, config)).toBe(14);
+    expect(scoreAnimaux([{ id: 'coccinelle', cubesPoses: 3 }], defs, config)).toBe(9);
   });
 
   it('un motif plus difficile rapporte davantage par animal', () => {
@@ -129,13 +130,11 @@ describe('Cartes animaux', () => {
     expect(difficulteMotif(defs.martin, config)).toBe(3.5);
   });
 
-  it('chaque piste est croissante, et chaque animal vaut au moins autant que le précédent', () => {
+  it('chaque animal rapporte strictement plus que le précédent', () => {
     for (const def of CARTES_ANIMAUX) {
-      const p = baremeCarte(def, config);
-      expect(p).toHaveLength(def.cubes);
-      for (let i = 1; i < p.length; i++) {
-        expect(p[i] - p[i - 1]).toBeGreaterThanOrEqual(i > 1 ? p[i - 1] - p[i - 2] : p[0]);
-      }
+      const g = gainsCarte(def, config);
+      expect(g).toHaveLength(def.cubes);
+      for (let i = 1; i < g.length; i++) expect(g[i]).toBeGreaterThan(g[i - 1]);
     }
   });
 

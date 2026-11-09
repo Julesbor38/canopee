@@ -64,8 +64,9 @@ const config = {
     batiments: { points: 5, couleursMin: 3, hauteurMin: 2 },
     // TODO: à valider — barème des cartes animaux, calculé selon la difficulté du motif.
     // Difficulté = somme des coûts des cases du motif (+ un supplément pour les formes à 3 cases).
-    // Le n-ième cube rapporte round(difficulté × (1 + progression × (n − 1))) points :
-    // les derniers cubes, plus durs à placer sur un plateau qui se remplit, valent davantage.
+    // Chaque animal rapporte plus que le précédent (la contrainte augmente à mesure que le
+    // plateau se remplit) : le 1er rapporte arrondi(difficulté), chaque suivant ajoute
+    // max(1, arrondi(difficulté × pas)) de plus que le précédent.
     // Une carte peut aussi fixer sa piste à la main avec `points: [...]` (scores cumulés).
     animaux: {
       couts: {
@@ -76,15 +77,15 @@ const config = {
         batiment: 3, // 2 pions dont un rouge (le plus rare)
       },
       supplementForme3: 0.5, // contrainte d'alignement / de triangle
-      progression: 0.15,
+      pas: 0.3,
     },
   },
 
   cartes: {
     // TODO: à valider — nombre de cartes visibles au centre
     visibles: 5,
-    // TODO: à valider — nombre d'exemplaires de chaque carte dans la pioche
-    exemplaires: 2,
+    // Chaque carte n'existe qu'en un seul exemplaire (pas de doublon)
+    exemplaires: 1,
     // TODO: à valider — nombre maximal de cartes non terminées en main
     maxEnMain: 4,
     // TODO: à valider — une seule carte, prise en même temps que le tas
@@ -177,9 +178,42 @@ export const CARTES_ANIMAUX = [
     ],
   },
   {
-    id: 'marmotte', nom: 'Marmotte', emoji: '🦫', cubes: 3,
+    id: 'marmotte', nom: 'Marmotte', emoji: '🐹', cubes: 3,
     motif: [
       { q: 0, r: 0, type: 'montagne', hauteur: 1 }, { q: 1, r: 0, type: 'prairie' },
+      { q: 0, r: 1, type: 'prairie' },
+    ],
+  },
+  {
+    id: 'cerf', nom: 'Cerf', emoji: '🦌', cubes: 3,
+    motif: [
+      { q: 0, r: 0, type: 'arbre', hauteur: 2 }, { q: 1, r: 0, type: 'arbre', hauteur: 2 },
+      { q: 0, r: 1, type: 'prairie' },
+    ],
+  },
+  {
+    id: 'lapin', nom: 'Lapin', emoji: '🐇', cubes: 4,
+    motif: [{ q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'prairie' }],
+  },
+  {
+    id: 'castor', nom: 'Castor', emoji: '🦫', cubes: 3,
+    motif: [
+      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'arbre', hauteur: 1 },
+      { q: 2, r: 0, type: 'riviere' },
+    ],
+  },
+  {
+    id: 'chauvesouris', nom: 'Chauve-souris', emoji: '🦇', cubes: 3,
+    motif: [{ q: 0, r: 0, type: 'batiment' }, { q: 1, r: 0, type: 'arbre', hauteur: 2 }],
+  },
+  {
+    id: 'bouquetin', nom: 'Bouquetin', emoji: '🐏', cubes: 2,
+    motif: [{ q: 0, r: 0, type: 'montagne', hauteur: 2 }, { q: 1, r: 0, type: 'montagne', hauteur: 3 }],
+  },
+  {
+    id: 'canard', nom: 'Canard', emoji: '🦆', cubes: 3,
+    motif: [
+      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' },
       { q: 0, r: 1, type: 'prairie' },
     ],
   },

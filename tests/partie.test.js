@@ -20,6 +20,13 @@ describe('Mise en place', () => {
     expect(e.sac.length).toBe(120 - 15);
   });
 
+  it('aucune carte en double dans la pioche et les cartes visibles', () => {
+    const e = creerPartie({ nbJoueurs: 4, graine: 5 });
+    const ids = [...e.pioche, ...e.cartesVisibles].map((c) => c.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.length).toBe(Object.keys(e.definitions).length);
+  });
+
   it('refuse 0 ou 5 joueurs', () => {
     expect(() => creerPartie({ nbJoueurs: 0 })).toThrow();
     expect(() => creerPartie({ nbJoueurs: 5 })).toThrow();
@@ -120,7 +127,7 @@ describe('Pose de cubes animaux via la partie', () => {
     expect(r.ok).toBe(false);
     e = jouer(e, { type: 'poserAnimal', carte: 'aigle-x', ligne: 3, colonne: 3 });
     expect(e.joueurs[0].cartes[0].cubesPoses).toBe(2);
-    expect(calculerScores(e)[0].animaux).toBe(12);
+    expect(calculerScores(e)[0].animaux).toBe(14);
     // carte terminée : plus de cube possible
     expect(appliquerAction(e, 0, { type: 'poserAnimal', carte: 'aigle-x', ligne: 3, colonne: 3 }).erreur)
       .toMatch(/terminée/);
@@ -135,8 +142,8 @@ describe('Pose de cubes animaux via la partie', () => {
       e = jouer(e, { type: 'poserAnimal', carte: 'coccinelle-x', ligne: l, colonne: c });
     }
     expect(e.joueurs[0].cartes[0].cubesPoses).toBe(5);
-    expect(calculerScores(e)[0].animaux).toBe(13);
-    expect(e.definitions.coccinelle.points).toEqual([2, 4, 7, 10, 13]);
+    expect(calculerScores(e)[0].animaux).toBe(20);
+    expect(e.definitions.coccinelle.points).toEqual([2, 5, 9, 14, 20]);
   });
 
   it('refuse un cube si le motif est absent', () => {

@@ -118,31 +118,6 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
               </button>
             ))}
           </div>
-          <h2>
-            Cartes animaux <small>({etat.nbPioche ?? etat.pioche.length} en pioche)</small>
-          </h2>
-          <div className="cartes-liste">
-            {etat.cartesVisibles.map((carte, i) =>
-              carte ? (
-                <CarteAnimal
-                  key={carte.uid}
-                  def={etat.definitions[carte.id]}
-                  choisie={carteChoisie === i}
-                  onClick={
-                    actif && etat.phase === PHASES.CHOIX && !pleinMain
-                      ? () => setCarteChoisie(carteChoisie === i ? null : i)
-                      : undefined
-                  }
-                  compacte
-                />
-              ) : (
-                <div key={`vide-${i}`} className="carte vide" />
-              ),
-            )}
-          </div>
-          {actif && etat.phase === PHASES.CHOIX && pleinMain && (
-            <p className="note">Vous avez déjà {etat.config.cartes.maxEnMain} cartes en cours.</p>
-          )}
         </section>
 
         <section className="zone-plateau" aria-label="Plateau">
@@ -200,6 +175,33 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
               </button>
             </div>
           )}
+
+          <section className="cartes-disponibles" aria-label="Cartes disponibles">
+            <h2>
+              Cartes animaux disponibles <small>({etat.nbPioche ?? etat.pioche.length} en pioche)</small>
+            </h2>
+            <div className="cartes-liste">
+              {etat.cartesVisibles.map((carte, i) =>
+                carte ? (
+                  <CarteAnimal
+                    key={carte.uid}
+                    def={etat.definitions[carte.id]}
+                    choisie={carteChoisie === i}
+                    onClick={
+                      actif && etat.phase === PHASES.CHOIX && !pleinMain
+                        ? () => setCarteChoisie(carteChoisie === i ? null : i)
+                        : undefined
+                    }
+                  />
+                ) : (
+                  <div key={`vide-${i}`} className="carte vide" />
+                ),
+              )}
+            </div>
+            {actif && etat.phase === PHASES.CHOIX && pleinMain && (
+              <p className="note">Vous avez déjà {etat.config.cartes.maxEnMain} cartes en cours.</p>
+            )}
+          </section>
 
           <div className="cartes-joueur">
             <h2>Cartes de {vu.nom}</h2>

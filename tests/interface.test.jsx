@@ -59,7 +59,7 @@ describe('Partie locale', () => {
   it('prendre une carte animal avec le tas', () => {
     const { container } = render(<PartieLocale reglages={reglages()} quitter={() => {}} />);
     const centre = within(screen.getByLabelText('Centre de la table'));
-    const premiereCarte = container.querySelector('.centre-table .carte');
+    const premiereCarte = container.querySelector('.cartes-disponibles .carte');
     const nom = premiereCarte.querySelector('.carte-titre').textContent.trim();
     fireEvent.click(premiereCarte);
     expect(premiereCarte.getAttribute('aria-pressed')).toBe('true');

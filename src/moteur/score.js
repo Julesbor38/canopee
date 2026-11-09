@@ -92,18 +92,27 @@ export function difficulteMotif(def, config) {
   return d;
 }
 
-/** Piste de points d'une carte : score cumulé après 1, 2, … n cubes. */
+/** Piste de points d'une carte : score cumulé après 1, 2, … n cubes.
+ *  Chaque animal rapporte strictement plus que le précédent. */
 export function baremeCarte(def, config) {
   if (def.points) return def.points;
   const d = difficulteMotif(def, config);
-  const { progression } = config.scoring.animaux;
+  const { pas } = config.scoring.animaux;
+  const premier = Math.max(1, Math.round(d));
+  const increment = Math.max(1, Math.round(d * pas));
   const piste = [];
   let total = 0;
   for (let n = 0; n < def.cubes; n++) {
-    total += Math.max(1, Math.round(d * (1 + progression * n)));
+    total += premier + n * increment;
     piste.push(total);
   }
   return piste;
+}
+
+/** Gain de chaque animal (différences successives de la piste). */
+export function gainsCarte(def, config) {
+  const piste = baremeCarte(def, config);
+  return piste.map((v, i) => v - (i ? piste[i - 1] : 0));
 }
 
 /** Cartes animaux : la carte rapporte la valeur de la dernière case couverte de sa piste. */
