@@ -70,6 +70,54 @@ describe('Coccinelle : prairie accolée à un arbre de taille 1 (5 fois)', () =>
   });
 });
 
+describe('Un groupe de cases ne donne qu’un animal', () => {
+  const cle = (m) => m.type + (m.hauteur ?? '');
+
+  it('la case cible est d’un type unique dans chaque motif', () => {
+    for (const def of CARTES_ANIMAUX) {
+      const cible = def.motif[indexCible(def)];
+      expect(def.motif.filter((m) => cle(m) === cle(cible)), def.nom).toHaveLength(1);
+    }
+  });
+
+  it('deux grands arbres ne donnent pas deux chouettes', () => {
+    const p = plateau({ '2,2': [M, M, V], '2,3': [M, M, V] });
+    expect(ciblesPossibles(p, carte('chouette'), config)).toHaveLength(0);
+  });
+
+  it('aucun motif en double entre deux cartes', () => {
+    const signature = (def) => def.motif.map(cle).sort().join('+');
+    const vues = CARTES_ANIMAUX.map(signature);
+    expect(new Set(vues).size).toBe(vues.length);
+  });
+});
+
+describe('Motifs en miroir', () => {
+  const papillon = carte('papillon'); // prairie (cible) + arbre 1 + bâtiment, en triangle
+  // triangle inversé : l'arbre et le bâtiment échangent leur place autour de la prairie
+  const miroir = () => {
+    const p = creerPlateau(config.plateau.lignes, config.plateau.colonnes);
+    const a = versAxial(1, 2);
+    const poser = (dq, dr, pile) => {
+      const { ligne, colonne } = versDecale(a.q + dq, a.r + dr);
+      p.cases[ligne][colonne].pile = pile;
+    };
+    poser(0, 0, [J]);
+    poser(0, 1, [V]); // arbre là où la carte dessine le bâtiment
+    poser(1, 0, [G, R]); // bâtiment là où la carte dessine l'arbre
+    return p;
+  };
+
+  it('le motif symétrique est reconnu', () => {
+    expect(ciblesPossibles(miroir(), papillon, config)).toEqual([{ ligne: 1, colonne: 2 }]);
+  });
+
+  it('sans les symétries, seul le sens de la carte est reconnu', () => {
+    const sansMiroir = { ...config, cartes: { ...config.cartes, symetries: false } };
+    expect(ciblesPossibles(miroir(), papillon, sansMiroir)).toHaveLength(0);
+  });
+});
+
 describe('Case cible logique', () => {
   it('les animaux aquatiques se posent sur une rivière', () => {
     for (const id of ['grenouille', 'loutre', 'martin', 'cigogne', 'castor', 'canard', 'tortue', 'saumon']) {
@@ -79,14 +127,14 @@ describe('Case cible logique', () => {
   });
 
   it('une cible explicite est prioritaire sur la case la plus à droite', () => {
-    const saumon = carte('saumon');
-    const p = plateau({ '2,1': [B], '2,2': [B], '2,3': [G, G] });
-    expect(ciblesPossibles(p, saumon, config)).toEqual([{ ligne: 2, colonne: 2 }]);
+    const loup = carte('loup');
+    const p = plateau({ '2,1': [M, V], '2,2': [G], '2,3': [M, V] });
+    expect(ciblesPossibles(p, loup, config)).toEqual([{ ligne: 2, colonne: 2 }]);
   });
 });
 
 describe('Toutes les cartes', () => {
-  it('30 cartes uniques, chacune réalisable sur le plateau 5×7 et détectée', () => {
+  it('30 cartes uniques, chacune réalisable sur le plateau 4×6 et détectée', () => {
     expect(CARTES_ANIMAUX).toHaveLength(30);
     expect(new Set(CARTES_ANIMAUX.map((c) => c.id)).size).toBe(30);
     const piles = {

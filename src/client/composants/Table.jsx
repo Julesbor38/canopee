@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { calculerScores, cartesEnCours, PHASES } from '../../moteur/partie.js';
+import { calculerScores, cartesEnCours, ordreDeJeu, PHASES } from '../../moteur/partie.js';
 import { casesPossibles } from '../../moteur/plateau.js';
 import { ciblesPossibles } from '../../moteur/motifs.js';
 import { NOMS_COULEURS } from '../geometrie.js';
+import { Avatar } from './Avatar.jsx';
+import { Logo } from './Paysage.jsx';
 import { CarteAnimal } from './CarteAnimal.jsx';
 import { Pion } from './Pile.jsx';
 import { Plateau } from './Plateau.jsx';
@@ -82,16 +84,53 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
       ? 'Touchez un tas pour le prendre. Vous pouvez prendre une carte animal avant ou après.'
       : etat.main.length
         ? `Posez vos pions : ${NOMS_COULEURS[etat.main[pionChoisi]] ?? ''} sélectionné.`
-        : peutPrendreCarte
+        : etat.defausseCeTour > 0
+          ? `Vous ne pouvez plus poser de pion (${etat.defausseCeTour} défaussé${etat.defausseCeTour > 1 ? 's' : ''}) : complétez vos animaux, puis finissez votre tour.`
+          : peutPrendreCarte
           ? 'Posez des cubes animaux si un motif est réalisé, prenez une carte si vous voulez, puis finissez votre tour.'
           : 'Posez des cubes animaux si un motif est réalisé, puis finissez votre tour.';
+
+  const nbSac = etat.nbSac ?? etat.sac?.length ?? 0;
+  const nbPioche = etat.nbPioche ?? etat.pioche.length;
+  const motifRealise = enPlacement && Object.values(ciblesParCarte).some((c) => c.length);
+  const meilleur = Math.max(...scores.map((x) => x.total));
+
+  const ordre = ordreDeJeu(etat);
+
+  // dernier tour : joueurs qui doivent encore jouer (jusqu'au retour à celui qui a déclenché la fin)
+  const fin = etat.phase !== PHASES.FIN ? etat.derniersTours : null;
+  const restants = [];
+  if (fin) {
+    const n = ordre.length;
+    const pos = ordre.indexOf(courant);
+    for (let k = courant === fin.declencheur ? 1 : 0; k < n; k++) {
+      const i = ordre[(pos + k) % n];
+      if (i === fin.declencheur) break;
+      restants.push(etat.joueurs[i].nom);
+    }
+  }
 
   return (
     <div className="table">
       <header className="barre">
-        <div className="titre-jeu">Canopée</div>
+        <div className="marque">
+          <Logo taille={38} />
+          <span className="titre-jeu">Canopée</span>
+        </div>
         <div className="info-tour">
-          Tour {etat.tour} · <strong>{joueur.nom}</strong>
+          <span className="tour-numero">Tour {etat.tour}</span>
+          <span className="tour-joueur">
+            <Avatar nom={joueur.nom} index={courant} taille={26} />
+            <strong>{joueur.nom}</strong>
+          </span>
+        </div>
+        <div className="reserve" aria-label="Réserve">
+          <span title="Pions restant dans le sac">
+            <span className="reserve-icone sac" aria-hidden="true" /> {nbSac}
+          </span>
+          <span title="Cartes restant dans la pioche">
+            <span className="reserve-icone pioche" aria-hidden="true" /> {nbPioche}
+          </span>
         </div>
         {quitter && (
           <button type="button" className="bouton discret" onClick={quitter}>
@@ -100,12 +139,24 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
         )}
       </header>
 
-      <p className="consigne" role="status">{consigne}</p>
+      <div className={`consigne${actif ? ' a-vous' : ''}`} role="status">
+        <span className="consigne-icone" aria-hidden="true">{actif ? '✦' : '…'}</span>
+        <span>{consigne}</span>
+      </div>
+      {fin && (
+        <div className="dernier-tour" role="note">
+          <span className="dernier-tour-icone" aria-hidden="true">⏳</span>
+          <span>
+            <strong>Dernier tour</strong> — {fin.raison}.{' '}
+            {restants.length ? `Encore à jouer : ${restants.join(', ')}.` : 'Ce tour est le dernier de la partie.'}
+          </span>
+        </div>
+      )}
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
 
       <div className="zone-jeu">
-        <section className="centre-table" aria-label="Centre de la table">
-          <h2>Tas</h2>
+        <section className="centre-table panneau" aria-label="Centre de la table">
+          <h2>Les tas</h2>
           <div className="tas-liste">
             {etat.tas.map((tas, i) => (
               <button
@@ -116,15 +167,21 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
                 onClick={() => prendreTas(i)}
                 aria-label={`Tas ${i + 1}`}
               >
-                {tas ? tas.map((c, k) => <Pion key={k} couleur={c} taille={24} />) : <span className="vide">vide</span>}
+                <span className="tas-numero" aria-hidden="true">{i + 1}</span>
+                <span className="tas-coupelle">
+                  {tas ? tas.map((c, k) => <Pion key={k} couleur={c} taille={22} />) : <span className="vide">vide</span>}
+                </span>
               </button>
             ))}
           </div>
+          <p className="note legende-tas">Un tas = 3 pions à poser sur votre plateau.</p>
         </section>
 
         <section className="zone-plateau" aria-label="Plateau">
-          <div className="onglets" role="tablist">
-            {etat.joueurs.map((j, i) => (
+          <div className="onglets" role="tablist" aria-label="Joueurs, dans l'ordre du tour">
+            {ordre.map((i, rang) => {
+              const j = etat.joueurs[i];
+              return (
               <button
                 key={i}
                 type="button"
@@ -132,61 +189,71 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
                 aria-selected={plateauVu === i}
                 className={`onglet${i === courant ? ' courant' : ''}`}
                 onClick={() => setPlateauVu(i)}
+                title={`${rang + 1}${rang ? 'ᵉ' : 'ᵉʳ'} à jouer`}
               >
-                {j.nom}
-                {moi === i ? ' (vous)' : ''}
-                {statuts && !statuts[i]?.bot && !statuts[i]?.connecte ? ' (déconnecté)' : ''} · {scores[i].total} pts
+                <Avatar nom={j.nom} index={i} taille={24} />
+                <span className="onglet-nom">
+                  {j.nom}
+                  {moi === i ? ' (vous)' : ''}
+                  {statuts && !statuts[i]?.bot && !statuts[i]?.connecte ? ' (déconnecté)' : ''}
+                </span>
+                <span className="onglet-score">{scores[i].total} pts</span>
               </button>
-            ))}
+              );
+            })}
           </div>
 
-          <Plateau
-            plateau={vu.plateau}
-            surbrillance={surbrillance}
-            cibles={cibles}
-            surCase={enPlacement ? surCase : undefined}
-            definitions={etat.definitions}
-          />
+          <div className="plateau-cadre">
+            <Plateau
+              plateau={vu.plateau}
+              surbrillance={surbrillance}
+              cibles={cibles}
+              surCase={enPlacement ? surCase : undefined}
+              definitions={etat.definitions}
+            />
 
-          {actif && etat.phase === PHASES.PLACEMENT && (
-            <div className="main">
-              <span>À poser :</span>
-              {etat.main.map((c, k) => (
+            {actif && etat.phase === PHASES.PLACEMENT && (
+              <div className="main">
+                <span className="main-titre">À poser</span>
+                <div className="main-pions">
+                  {etat.main.map((c, k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      className="pion-main"
+                      aria-label={`Pion ${NOMS_COULEURS[c]}`}
+                      aria-pressed={k === pionChoisi && !animalChoisi}
+                      title={NOMS_COULEURS[c]}
+                      onClick={() => {
+                        setPionChoisi(k);
+                        setAnimalChoisi(null);
+                        setPlateauVu(courant);
+                      }}
+                    >
+                      <Pion couleur={c} taille={28} choisi={k === pionChoisi && !animalChoisi} />
+                    </button>
+                  ))}
+                  {etat.main.length === 0 && <span className="note">Tous vos pions sont posés.</span>}
+                </div>
                 <button
-                  key={k}
                   type="button"
-                  className="pion-main"
-                  aria-label={`Pion ${NOMS_COULEURS[c]}`}
-                  aria-pressed={k === pionChoisi && !animalChoisi}
-                  onClick={() => {
-                    setPionChoisi(k);
-                    setAnimalChoisi(null);
-                    setPlateauVu(courant);
-                  }}
+                  className="bouton principal"
+                  disabled={etat.main.length > 0}
+                  onClick={() => envoyer({ type: 'finTour' })}
                 >
-                  <Pion couleur={c} taille={28} choisi={k === pionChoisi && !animalChoisi} />
+                  Fin du tour
                 </button>
-              ))}
-              <button
-                type="button"
-                className="bouton principal"
-                disabled={etat.main.length > 0}
-                onClick={() => envoyer({ type: 'finTour' })}
-              >
-                Fin du tour
-              </button>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
 
-          <div className={`cartes-joueur${enPlacement && Object.values(ciblesParCarte).some((c) => c.length) ? ' animal-possible' : ''}`}>
+          <div className={`cartes-joueur${motifRealise ? ' animal-possible' : ''}`}>
             <h2>
               {plateauVu === moi || (moi === null && plateauVu === courant) ? 'Vos cartes animaux' : `Cartes de ${vu.nom}`}
-              {enPlacement && Object.values(ciblesParCarte).some((c) => c.length) && (
-                <span className="indice"> — un motif est réalisé : touchez la carte en orange</span>
-              )}
+              {motifRealise && <span className="indice"> — un motif est réalisé : touchez la carte qui brille</span>}
             </h2>
             <div className="cartes-liste">
-              {vu.cartes.length === 0 && <p className="note">Aucune carte.</p>}
+              {vu.cartes.length === 0 && <p className="note">Aucune carte pour l'instant.</p>}
               {vu.cartes.map((carte) => {
                 const possibles = plateauVu === courant ? ciblesParCarte[carte.uid]?.length ?? 0 : 0;
                 return (
@@ -209,7 +276,7 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
 
           <section className="cartes-disponibles" aria-label="Cartes disponibles">
             <h2>
-              Cartes animaux disponibles <small>({etat.nbPioche ?? etat.pioche.length} en pioche)</small>
+              Cartes animaux disponibles <small>({nbPioche} en pioche)</small>
             </h2>
             <div className="cartes-liste">
               {etat.cartesVisibles.map((carte, i) =>
@@ -228,12 +295,11 @@ export function Table({ etat, envoyer, moi = null, attente = false, erreur, quit
             {actif && !pleinMain && carteDejaPrise && <p className="note">Vous avez déjà pris une carte ce tour-ci.</p>}
             {peutPrendreCarte && <p className="note">Touchez une carte pour la prendre (une par tour, avant ou après le tas).</p>}
           </section>
-
         </section>
 
-        <aside className="scores" aria-label="Scores">
+        <aside className="scores panneau" aria-label="Scores">
           <h2>Scores</h2>
-          <TableauScores etat={etat} scores={scores} />
+          <TableauScores etat={etat} scores={scores} meilleur={meilleur} courant={courant} />
         </aside>
       </div>
 

@@ -129,10 +129,10 @@ describe('Cartes animaux', () => {
 
   it('un motif plus difficile rapporte davantage par animal', () => {
     const parAnimal = (id) => baremeCarte(defs[id], config)[0];
-    // prairie + arbre d'1 pion  <  prairie + montagne de 3  <  deux arbres de 3
+    // prairie + arbre d'1 pion  <  prairie + montagne de 3  <  forêt étagée (arbres de 3, 2 et 1)
     expect(parAnimal('coccinelle')).toBeLessThan(parAnimal('aigle'));
     expect(parAnimal('aigle')).toBeLessThan(parAnimal('chouette'));
-    expect(difficulteMotif(defs.chouette, config)).toBe(9);
+    expect(difficulteMotif(defs.chouette, config)).toBe(8.5);
     // une forme à 3 cases coûte plus que la somme de ses cases
     expect(difficulteMotif(defs.martin, config)).toBe(3.5);
   });

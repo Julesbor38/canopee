@@ -36,6 +36,12 @@ export function tournerN(q, r, n) {
   return p;
 }
 
+/** Symétrie axiale d'un vecteur axial (échange de deux coordonnées cubiques) :
+ *  combinée aux 6 rotations, elle donne les 12 symétries de l'hexagone. */
+export function refleter(q, r) {
+  return { q: r, r: q };
+}
+
 /** Abscisse « visuelle » d'une case axiale (sert à trouver la case la plus à droite). */
 export function abscisse(q, r) {
   return q + r / 2;

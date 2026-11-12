@@ -120,7 +120,7 @@ function fenetres(haut, bas, couleur) {
 
 /** Toit pointu (pyramide hexagonale) sur le dernier niveau d'une maison. */
 function toit(x, haut, r, s) {
-  const couleur = '#e3928b';
+  const couleur = '#c9573f';
   const base = sommetsHex(x, haut[0][1], r * 1.12);
   const A = [x, haut[0][1] - s * 0.55];
   const ordre = [[4, 5, 1.05], [5, 0, 0.95], [3, 4, 1], [0, 1, 0.74], [1, 2, 0.8], [2, 3, 0.9]];

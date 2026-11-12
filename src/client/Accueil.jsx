@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Avatar } from './composants/Avatar.jsx';
+import { Logo, Paysage } from './composants/Paysage.jsx';
 
 const NOMS_PAR_DEFAUT = ['Alice', 'Bastien', 'Chloé', 'David'];
 
@@ -22,8 +24,12 @@ export function Accueil({ lancerLocal, allerDistant }) {
 
   return (
     <main className="accueil">
-      <h1>Canopée</h1>
-      <p className="sous-titre">Composez le plus beau paysage et accueillez les animaux.</p>
+      <Paysage />
+      <header className="titre-accueil">
+        <Logo taille={84} />
+        <h1>Canopée</h1>
+        <p className="sous-titre">Façonnez rivières, forêts et montagnes, et accueillez les animaux.</p>
+      </header>
 
       <form className="fenetre" onSubmit={lancer}>
         <h2>Partie sur cet écran</h2>
@@ -39,14 +45,16 @@ export function Accueil({ lancerLocal, allerDistant }) {
 
         {joueurs.slice(0, nb).map((j, i) => (
           <div key={i} className="ligne-joueur">
+            <Avatar nom={j.nom} index={i} taille={34} />
             <input
               aria-label={`Nom du joueur ${i + 1}`}
               value={j.nom}
               onChange={(e) => modifier(i, 'nom', e.target.value)}
               maxLength={20}
             />
-            <label>
+            <label className="interrupteur">
               <input type="checkbox" checked={j.bot} onChange={(e) => modifier(i, 'bot', e.target.checked)} />
+              <span className="interrupteur-piste" aria-hidden="true" />
               Ordinateur
             </label>
           </div>
@@ -63,8 +71,8 @@ export function Accueil({ lancerLocal, allerDistant }) {
       </form>
 
       {allerDistant && (
-        <button type="button" className="bouton" onClick={allerDistant}>
-          Jouer à distance
+        <button type="button" className="bouton bouton-verre" onClick={allerDistant}>
+          🌍 Jouer à distance
         </button>
       )}
     </main>

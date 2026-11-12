@@ -11,5 +11,5 @@ export default defineConfig({
   },
   preview: { host: '0.0.0.0', port: 4173 },
   build: { outDir: 'dist' },
-  test: { include: ['tests/**/*.test.{js,jsx}'] },
+  test: { include: ['tests/**/*.test.{js,jsx}'], setupFiles: ['tests/preparation.js'] },
 });

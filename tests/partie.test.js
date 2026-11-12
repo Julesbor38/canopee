@@ -11,13 +11,13 @@ function jouer(etat, action, joueur = etat.joueurCourant) {
 }
 
 describe('Mise en place', () => {
-  it('5 tas de 3 pions, un plateau 5×7 par joueur, sac de 240 pions', () => {
+  it('5 tas de 3 pions, un plateau 4×6 par joueur, sac de 120 pions', () => {
     const e = creerPartie({ nbJoueurs: 3, graine: 1 });
     expect(e.tas).toHaveLength(5);
     expect(e.tas.every((t) => t.length === 3)).toBe(true);
     expect(e.joueurs).toHaveLength(3);
     expect(e.cartesVisibles.filter(Boolean)).toHaveLength(5);
-    expect(e.sac.length).toBe(240 - 15);
+    expect(e.sac.length).toBe(120 - 15);
   });
 
   it('aucune carte en double dans la pioche et les cartes visibles', () => {
@@ -77,7 +77,7 @@ describe('Tour de jeu', () => {
     expect(jouer(avant, { type: 'prendreTas', tas: 0 }).phase).toBe(PHASES.PLACEMENT);
     // après le tas, même une fois les pions posés
     let e = jouer(e0, { type: 'prendreTas', tas: 0 });
-    for (const [l, c] of [[0, 0], [2, 2], [4, 4]]) e = jouer(e, { type: 'poserPion', pion: 0, ligne: l, colonne: c });
+    for (const [l, c] of [[0, 0], [2, 2], [3, 4]]) e = jouer(e, { type: 'poserPion', pion: 0, ligne: l, colonne: c });
     e = jouer(e, { type: 'prendreCarte', carte: 1 });
     expect(e.joueurs[0].cartes[0].id).toBe(e0.cartesVisibles[1].id);
     // le compteur repart à zéro au tour suivant
@@ -91,7 +91,7 @@ describe('Tour de jeu', () => {
     while (e.main.length) {
       const c = e.main[0];
       const libre = e.joueurs[0].plateau.cases.flat().findIndex((k) => !k.pile.length);
-      e = jouer(e, { type: 'poserPion', pion: 0, ligne: Math.floor(libre / 7), colonne: libre % 7 });
+      e = jouer(e, { type: 'poserPion', pion: 0, ligne: Math.floor(libre / 6), colonne: libre % 6 });
       expect(c).toBeTruthy();
     }
     e = jouer(e, { type: 'finTour' });
@@ -116,7 +116,7 @@ describe('Tour de jeu', () => {
     // pose sur trois cases vides distinctes : toujours légal
     e = jouer(e, { type: 'poserPion', pion: 0, ligne: 0, colonne: 0 });
     e = jouer(e, { type: 'poserPion', pion: 0, ligne: 2, colonne: 2 });
-    e = jouer(e, { type: 'poserPion', pion: 0, ligne: 4, colonne: 4 });
+    e = jouer(e, { type: 'poserPion', pion: 0, ligne: 3, colonne: 4 });
     e = jouer(e, { type: 'finTour' });
     expect(e.joueurCourant).toBe(1);
     expect(e.phase).toBe(PHASES.CHOIX);
@@ -154,10 +154,10 @@ describe('Pose de cubes animaux via la partie', () => {
 
   it('Coccinelle : 5 cubes pour clore la carte', () => {
     let e = preparer('coccinelle', {
-      '0,0': [J], '0,1': [V], '2,0': [J], '2,1': [V], '4,0': [J], '4,1': [V],
-      '0,5': [J], '0,6': [V], '4,5': [J], '4,6': [V],
+      '0,0': [J], '0,1': [V], '2,0': [J], '2,1': [V], '3,2': [J], '3,3': [V],
+      '0,4': [J], '0,5': [V], '2,4': [J], '2,5': [V],
     });
-    for (const [l, c] of [[0, 1], [2, 1], [4, 1], [0, 6], [4, 6]]) {
+    for (const [l, c] of [[0, 1], [2, 1], [3, 3], [0, 5], [2, 5]]) {
       e = jouer(e, { type: 'poserAnimal', carte: 'coccinelle-x', ligne: l, colonne: c });
     }
     expect(e.joueurs[0].cartes[0].cubesPoses).toBe(5);
@@ -172,16 +172,95 @@ describe('Pose de cubes animaux via la partie', () => {
   });
 });
 
+describe('Ordre des tours aléatoire', () => {
+  const aleatoire = (graine, nbJoueurs = 4) => creerPartie({ nbJoueurs, graine, config: { ordreAleatoire: true } });
+
+  it("tire au sort l'ordre : une permutation des joueurs, le premier commence", () => {
+    const e = aleatoire(3);
+    expect([...e.ordre].sort()).toEqual([0, 1, 2, 3]);
+    expect(e.joueurCourant).toBe(e.ordre[0]);
+    // même graine, même ordre ; des graines différentes donnent des premiers joueurs différents
+    expect(aleatoire(3).ordre).toEqual(e.ordre);
+    const premiers = new Set(Array.from({ length: 30 }, (_, g) => aleatoire(g + 1).ordre[0]));
+    expect(premiers.size).toBeGreaterThan(1);
+  });
+
+  it("les tours suivent l'ordre tiré, et le tour change quand on revient au premier", () => {
+    let e = aleatoire(11, 3);
+    const vus = [];
+    for (let k = 0; k < 3; k++) {
+      vus.push(e.joueurCourant);
+      expect(e.tour).toBe(1);
+      e = jouer(e, { type: 'prendreTas', tas: 0 });
+      for (const [l, c] of [[0, 0], [2, 2], [3, 4]]) e = jouer(e, { type: 'poserPion', pion: 0, ligne: l, colonne: c });
+      e = jouer(e, { type: 'finTour' });
+    }
+    expect(vus).toEqual(e.ordre);
+    expect(e.joueurCourant).toBe(e.ordre[0]);
+    expect(e.tour).toBe(2);
+  });
+
+  it('une partie complète entre ordinateurs se termine', () => {
+    const final = jouerPartieAuto(aleatoire(2026));
+    expect(final.phase).toBe(PHASES.FIN);
+  });
+});
+
 describe('Fin de partie', () => {
-  it("s'arrête quand le joueur ne peut plus poser de pion", () => {
-    const e = creerPartie({ nbJoueurs: 1, graine: 1 });
-    // plateau entièrement couvert de prairies : plus rien n'est posable
-    for (const ligne of e.joueurs[0].plateau.cases) for (const k of ligne) k.pile = [J];
+  /** Couvre tout le plateau du joueur i de prairies : plus aucun pion n'est posable. */
+  const couvrir = (e, i) => {
+    for (const ligne of e.joueurs[i].plateau.cases) for (const k of ligne) k.pile = [J];
+  };
+
+  it('le joueur bloqué défausse ses pions, peut encore poser ses animaux, puis la partie finit', () => {
+    let e = creerPartie({ nbJoueurs: 1, graine: 1 });
+    couvrir(e, 0);
+    e.joueurs[0].cartes.push({ uid: 'lapin-x', id: 'lapin', cubesPoses: 0 });
+    e.joueurs[0].plateau.cases[0][1].pile = [G];
+    e = jouer(e, { type: 'prendreTas', tas: 0 });
+    expect(e.phase).toBe(PHASES.PLACEMENT);
+    expect(e.main).toEqual([]);
+    expect(e.defausseCeTour).toBe(3);
+    expect(e.derniersTours).toMatchObject({ declencheur: 0 });
+    // il complète encore un animal (prairie à côté d'un rocher)
+    e = jouer(e, { type: 'poserAnimal', carte: 'lapin-x', ligne: 0, colonne: 0 });
+    expect(e.joueurs[0].cartes[0].cubesPoses).toBe(1);
+    e = jouer(e, { type: 'finTour' });
+    expect(e.phase).toBe(PHASES.FIN);
+    expect(e.finDePartie.raison).toMatch(/ne peut plus/);
+    expect(e.finDePartie.scores[0].animaux).toBe(2);
+    expect(appliquerAction(e, 0, { type: 'finTour' }).ok).toBe(false);
+  });
+
+  it('les autres joueurs jouent chacun un dernier tour', () => {
+    let e = creerPartie({ nbJoueurs: 3, graine: 4 });
+    // tour normal du joueur 0
+    e = jouer(e, { type: 'prendreTas', tas: 0 });
+    for (const [l, c] of [[0, 0], [2, 2], [3, 4]]) e = jouer(e, { type: 'poserPion', pion: 0, ligne: l, colonne: c });
+    e = jouer(e, { type: 'finTour' });
+    // le joueur 1 est bloqué : il déclenche la fin
+    couvrir(e, 1);
+    e = jouer(e, { type: 'prendreTas', tas: 0 });
+    e = jouer(e, { type: 'finTour' });
+    expect(e.phase).toBe(PHASES.CHOIX);
+    expect(e.joueurCourant).toBe(2);
+    // dernier tour du joueur 2, puis du joueur 0 ; la partie finit en revenant au joueur 1
+    for (const joueur of [2, 0]) {
+      expect(e.joueurCourant).toBe(joueur);
+      e = jouer(e, { type: 'prendreTas', tas: 0 });
+      for (const [l, c] of [[1, 0], [1, 2], [1, 4]]) e = jouer(e, { type: 'poserPion', pion: 0, ligne: l, colonne: c });
+      e = jouer(e, { type: 'finTour' });
+    }
+    expect(e.phase).toBe(PHASES.FIN);
+    expect(e.finDePartie.raison).toMatch(/chacun a joué un dernier tour/);
+  });
+
+  it('option « immediate » : la partie s\'arrête aussitôt', () => {
+    const e = creerPartie({ nbJoueurs: 2, graine: 1, config: { finDePartie: 'immediate' } });
+    couvrir(e, 0);
     const r = jouer(e, { type: 'prendreTas', tas: 0 });
     expect(r.phase).toBe(PHASES.FIN);
     expect(r.finDePartie.raison).toMatch(/ne peut plus/);
-    expect(r.finDePartie.scores[0].prairies).toBe(5);
-    expect(appliquerAction(r, 0, { type: 'finTour' }).ok).toBe(false);
   });
 });
 

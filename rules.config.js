@@ -17,19 +17,22 @@ const { BLEU, GRIS, MARRON, VERT, JAUNE, ROUGE } = COULEURS;
 /** Configuration par défaut. */
 const config = {
   plateau: {
-    lignes: 5, // 5 cases de haut
-    colonnes: 7, // 7 cases de large
+    lignes: 4, // 4 cases de haut
+    colonnes: 6, // 6 cases de large
   },
 
-  // Composition du sac (240 pions)
+  // Composition du sac (120 pions, comme dans le jeu d'origine)
   sac: {
-    [BLEU]: 46,
-    [GRIS]: 46,
-    [MARRON]: 42,
-    [VERT]: 38,
-    [JAUNE]: 38,
-    [ROUGE]: 30,
+    [BLEU]: 23,
+    [GRIS]: 23,
+    [MARRON]: 21,
+    [VERT]: 19,
+    [JAUNE]: 19,
+    [ROUGE]: 15,
   },
+
+  // l'ordre des tours est tiré au sort en début de partie (sinon : ordre d'inscription)
+  ordreAleatoire: true,
 
   nbTas: 5, // 5 tas au centre de la table
   pionsParTas: 3, // 3 éléments par tas
@@ -42,9 +45,9 @@ const config = {
     [GRIS]: [[], [GRIS], [GRIS, GRIS]],
     [MARRON]: [[], [MARRON]],
     [VERT]: [[], [MARRON], [MARRON, MARRON]],
-    // bâtiment : sur n'importe quel bloc seul (roche, tronc, feuillage ou bâtiment) — le socle
-    // n'a aucune incidence sur les points ni sur les motifs
-    [ROUGE]: [[], [GRIS], [MARRON], [VERT], [ROUGE]],
+    // bâtiment : sur un bloc seul de roche, de tronc ou de bâtiment (jamais sur un feuillage) —
+    // le socle n'a aucune incidence sur les points ni sur les motifs
+    [ROUGE]: [[], [GRIS], [MARRON], [ROUGE]],
   },
 
   scoring: {
@@ -94,11 +97,16 @@ const config = {
     maxParTour: 1,
     // TODO: à valider — les motifs peuvent être tournés (6 rotations hexagonales)
     rotations: true,
+    // les motifs peuvent aussi être réalisés en miroir : seul compte quelle case touche quelle case
+    symetries: true,
   },
 
-  // TODO: à valider — la partie s'arrête dès qu'un joueur ne peut plus poser un pion
-  // (ou qu'il n'y a plus de tas à prendre). Les scores sont calculés à ce moment-là.
-  finDePartie: 'immediate',
+  // Fin de partie quand un joueur ne peut plus poser de pion :
+  //  'dernierTour' : il défausse les pions impossibles à poser, peut encore compléter ses animaux
+  //                  et finir son tour, puis chacun des autres joueurs joue un dernier tour ;
+  //  'immediate'   : la partie s'arrête aussitôt.
+  // Dans tous les cas, la partie s'arrête s'il n'y a plus aucun tas à prendre.
+  finDePartie: 'dernierTour',
 };
 
 export default config;
@@ -133,17 +141,19 @@ export const CARTES_ANIMAUX = [
     motif: [{ q: 0, r: 0, type: 'montagne', hauteur: 2 }, { q: 1, r: 0, type: 'arbre', hauteur: 3 }],
   },
   {
-    id: 'renard', nom: 'Renard', emoji: '🦊', cubes: 3, cible: 0,
+    // renard tapi dans un buisson au bord des champs
+    id: 'renard', nom: 'Renard', emoji: '🦊', cubes: 3, cible: 2,
     motif: [
       { q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'prairie' },
       { q: 2, r: 0, type: 'arbre', hauteur: 2 },
     ],
   },
   {
+    // loutre sur la rive, entre deux prairies
     id: 'loutre', nom: 'Loutre', emoji: '🦦', cubes: 3, cible: 0,
     motif: [
-      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' },
-      { q: 2, r: 0, type: 'arbre', hauteur: 2 },
+      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'prairie' },
+      { q: 2, r: 0, type: 'prairie' },
     ],
   },
   {
@@ -151,14 +161,17 @@ export const CARTES_ANIMAUX = [
     motif: [{ q: 0, r: 0, type: 'batiment' }, { q: 1, r: 0, type: 'prairie' }],
   },
   {
-    id: 'chouette', nom: 'Chouette', emoji: '🦉', cubes: 2,
-    motif: [{ q: 0, r: 0, type: 'arbre', hauteur: 3 }, { q: 1, r: 0, type: 'arbre', hauteur: 3 }],
+    // forêt étagée : grand arbre (cible) entouré d'un arbre moyen et d'un petit
+    id: 'chouette', nom: 'Chouette', emoji: '🦉', cubes: 2, cible: 0,
+    motif: [
+      { q: 0, r: 0, type: 'arbre', hauteur: 3 }, { q: 1, r: 0, type: 'arbre', hauteur: 2 },
+      { q: 0, r: 1, type: 'arbre', hauteur: 1 },
+    ],
   },
   {
-    id: 'martin', nom: 'Martin-pêcheur', emoji: '🐦', cubes: 3,
-    motif: [
-      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' }, { q: 2, r: 0, type: 'riviere' },
-    ],
+    // martin-pêcheur perché au-dessus de l'eau
+    id: 'martin', nom: 'Martin-pêcheur', emoji: '🐦', cubes: 4, cible: 0,
+    motif: [{ q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'arbre', hauteur: 2 }],
   },
   {
     id: 'chamois', nom: 'Chamois', emoji: '🐐', cubes: 4,
@@ -188,21 +201,24 @@ export const CARTES_ANIMAUX = [
     ],
   },
   {
-    id: 'cerf', nom: 'Cerf', emoji: '🦌', cubes: 3,
+    // cerf dans une clairière entre deux arbres
+    id: 'cerf', nom: 'Cerf', emoji: '🦌', cubes: 3, cible: 2,
     motif: [
       { q: 0, r: 0, type: 'arbre', hauteur: 2 }, { q: 1, r: 0, type: 'arbre', hauteur: 2 },
       { q: 0, r: 1, type: 'prairie' },
     ],
   },
   {
-    id: 'lapin', nom: 'Lapin', emoji: '🐇', cubes: 4,
-    motif: [{ q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'prairie' }],
+    // terrier de lapin au pied d'un rocher
+    id: 'lapin', nom: 'Lapin', emoji: '🐇', cubes: 4, cible: 0,
+    motif: [{ q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'montagne', hauteur: 1 }],
   },
   {
-    id: 'castor', nom: 'Castor', emoji: '🦫', cubes: 3,
+    // barrage de castor entre deux jeunes arbres
+    id: 'castor', nom: 'Castor', emoji: '🦫', cubes: 3, cible: 0,
     motif: [
       { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'arbre', hauteur: 1 },
-      { q: 2, r: 0, type: 'riviere' },
+      { q: 0, r: 1, type: 'arbre', hauteur: 1 },
     ],
   },
   {
@@ -214,37 +230,43 @@ export const CARTES_ANIMAUX = [
     motif: [{ q: 0, r: 0, type: 'montagne', hauteur: 2 }, { q: 1, r: 0, type: 'montagne', hauteur: 3 }],
   },
   {
-    id: 'canard', nom: 'Canard', emoji: '🦆', cubes: 3,
+    // mare aux canards près d'une prairie et d'un buisson
+    id: 'canard', nom: 'Canard', emoji: '🦆', cubes: 3, cible: 0,
     motif: [
-      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' },
-      { q: 0, r: 1, type: 'prairie' },
+      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'prairie' },
+      { q: 0, r: 1, type: 'arbre', hauteur: 1 },
     ],
   },
   {
-    id: 'loup', nom: 'Loup', emoji: '🐺', cubes: 3,
+    // loup sur un rocher entre deux arbres
+    id: 'loup', nom: 'Loup', emoji: '🐺', cubes: 3, cible: 1,
     motif: [
       { q: 0, r: 0, type: 'arbre', hauteur: 2 }, { q: 1, r: 0, type: 'montagne', hauteur: 1 },
       { q: 2, r: 0, type: 'arbre', hauteur: 2 },
     ],
   },
   {
-    id: 'sanglier', nom: 'Sanglier', emoji: '🐗', cubes: 4,
+    // sanglier dans une prairie entre deux buissons
+    id: 'sanglier', nom: 'Sanglier', emoji: '🐗', cubes: 4, cible: 1,
     motif: [
       { q: 0, r: 0, type: 'arbre', hauteur: 1 }, { q: 1, r: 0, type: 'prairie' },
       { q: 2, r: 0, type: 'arbre', hauteur: 1 },
     ],
   },
   {
-    id: 'tortue', nom: 'Tortue', emoji: '🐢', cubes: 3,
+    // tortue au bord de l'eau, entre les rochers
+    id: 'tortue', nom: 'Tortue', emoji: '🐢', cubes: 3, cible: 0,
     motif: [
-      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' },
+      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'montagne', hauteur: 1 },
       { q: 0, r: 1, type: 'montagne', hauteur: 1 },
     ],
   },
   {
-    id: 'escargot', nom: 'Escargot', emoji: '🐌', cubes: 3,
+    // escargot dans une prairie, entre un rocher et un buisson
+    id: 'escargot', nom: 'Escargot', emoji: '🐌', cubes: 3, cible: 1,
     motif: [
-      { q: 0, r: 0, type: 'prairie' }, { q: 1, r: 0, type: 'prairie' }, { q: 2, r: 0, type: 'prairie' },
+      { q: 0, r: 0, type: 'montagne', hauteur: 1 }, { q: 1, r: 0, type: 'prairie' },
+      { q: 2, r: 0, type: 'arbre', hauteur: 1 },
     ],
   },
   {
@@ -255,15 +277,20 @@ export const CARTES_ANIMAUX = [
     ],
   },
   {
-    id: 'saumon', nom: 'Saumon', emoji: '🐟', cubes: 3, cible: 1,
+    // saumon qui remonte le torrent descendu de la montagne
+    id: 'saumon', nom: 'Saumon', emoji: '🐟', cubes: 3, cible: 0,
     motif: [
-      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'riviere' },
+      { q: 0, r: 0, type: 'riviere' }, { q: 1, r: 0, type: 'montagne', hauteur: 1 },
       { q: 2, r: 0, type: 'montagne', hauteur: 2 },
     ],
   },
   {
-    id: 'souris', nom: 'Souris', emoji: '🐭', cubes: 2,
-    motif: [{ q: 0, r: 0, type: 'batiment' }, { q: 1, r: 0, type: 'batiment' }],
+    // grange au bord des champs : bâtiment (cible) + prairie + prairie
+    id: 'souris', nom: 'Souris', emoji: '🐭', cubes: 3, cible: 0,
+    motif: [
+      { q: 0, r: 0, type: 'batiment' }, { q: 1, r: 0, type: 'prairie' },
+      { q: 2, r: 0, type: 'prairie' },
+    ],
   },
   {
     id: 'paon', nom: 'Paon', emoji: '🦚', cubes: 2,

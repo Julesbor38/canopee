@@ -52,7 +52,7 @@ describe('Interface distante', () => {
     // Alice joue son tour
     fireEvent.click(alice.getByLabelText('Tas 1'));
     await attendre(() => expect(alice.getByText('Fin du tour')).toBeTruthy());
-    for (const cle of ['0,0', '2,2', '4,4']) {
+    for (const cle of ['0,0', '2,2', '3,4']) {
       const avant = alice.getAllByLabelText(/^Pion /).length;
       fireEvent.click(alice.getByRole('grid').querySelector(`[data-case="${cle}"]`));
       await attendre(() => expect(alice.queryAllByLabelText(/^Pion /).length).toBe(avant - 1));

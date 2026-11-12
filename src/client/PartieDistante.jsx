@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
+import { Avatar } from './composants/Avatar.jsx';
+import { Logo, Paysage } from './composants/Paysage.jsx';
 import { Table } from './composants/Table.jsx';
 
 const CLE_SESSION = 'canopee.session';
@@ -88,8 +90,12 @@ export function PartieDistante({ quitter, url, memoriser = true }) {
   if (moi === null || !vue) {
     return (
       <main className="accueil">
-        <h1>Canopée</h1>
-        <p className="sous-titre">Partie à distance — chacun sur son appareil.</p>
+        <Paysage />
+        <header className="titre-accueil">
+          <Logo taille={64} />
+          <h1>Canopée</h1>
+          <p className="sous-titre">Partie à distance — chacun sur son appareil.</p>
+        </header>
         <div className="fenetre">
           <label className="ligne-graine">
             Votre nom
@@ -126,7 +132,7 @@ export function PartieDistante({ quitter, url, memoriser = true }) {
           {!connecte && <p className="note">Connexion au serveur…</p>}
           {erreur && <p className="erreur" role="alert">{erreur}</p>}
         </div>
-        <button type="button" className="bouton" onClick={sortir}>
+        <button type="button" className="bouton bouton-verre" onClick={sortir}>
           Retour
         </button>
       </main>
@@ -140,17 +146,26 @@ export function PartieDistante({ quitter, url, memoriser = true }) {
     const lien = `${globalThis.location?.origin ?? ''}/?salle=${vue.code}`;
     return (
       <main className="accueil">
-        <h1>Canopée</h1>
+        <Paysage />
+        <header className="titre-accueil compact">
+          <Logo taille={52} />
+          <h1>Canopée</h1>
+        </header>
         <div className="fenetre">
           <h2>Salle d'attente</h2>
           <p className="note">Code à donner aux autres joueurs :</p>
-          <div className="code-salle" aria-label="Code à partager">{vue.code}</div>
+          <div className="code-salle" aria-label="Code à partager">
+            {vue.code.split('').map((l, i) => (
+              <span key={i}>{l}</span>
+            ))}
+          </div>
           <p className="note lien">{lien}</p>
           <ul className="liste-joueurs">
             {vue.joueurs.map((j, i) => (
               <li key={i}>
-                <span className={j.connecte ? 'pastille en-ligne' : 'pastille'} />
-                {j.nom}
+                <Avatar nom={j.nom} index={i} taille={30} />
+                <span className="liste-nom">{j.nom}</span>
+                <span className={j.connecte ? 'pastille en-ligne' : 'pastille'} title={j.connecte ? 'En ligne' : 'Hors ligne'} />
                 {j.bot && ' 🤖'}
                 {j.hote && <small> (hôte)</small>}
                 {i === moi && <small> (vous)</small>}
@@ -181,7 +196,7 @@ export function PartieDistante({ quitter, url, memoriser = true }) {
           )}
           {erreur && <p className="erreur" role="alert">{erreur}</p>}
         </div>
-        <button type="button" className="bouton" onClick={sortir}>
+        <button type="button" className="bouton bouton-verre" onClick={sortir}>
           Quitter la salle
         </button>
       </main>

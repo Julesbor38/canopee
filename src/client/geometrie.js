@@ -1,13 +1,13 @@
 // Géométrie d'affichage : hexagones « pointe en haut », lignes impaires décalées.
 
-// Teintes pastel des pions
+// Teintes des pions : naturelles, douces mais lisibles
 export const COULEURS_AFFICHAGE = {
-  bleu: '#8cc4ea',
-  gris: '#b9c0ca',
-  marron: '#c9a07c',
-  vert: '#93d3a2',
-  jaune: '#f2df8f',
-  rouge: '#f0a5a0',
+  bleu: '#72b8e2',
+  gris: '#aeb6c1',
+  marron: '#ad7d54',
+  vert: '#74c07a',
+  jaune: '#f1d067',
+  rouge: '#e57f63',
 };
 
 /** Écrasement vertical de la vue en perspective (1 = vue de dessus). */

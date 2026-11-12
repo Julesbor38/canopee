@@ -7,10 +7,10 @@ import { B, G, J, M, R, V, config, plateau } from './aides.js';
 const ok = (p, l, c, couleur) => verifierPose(p, l, c, couleur, config).ok;
 
 describe('Géométrie', () => {
-  it('le plateau de jeu fait 5 de haut sur 7 de large', () => {
+  it('le plateau de jeu fait 4 de haut sur 6 de large', () => {
     const p = creerPartie({ nbJoueurs: 1, graine: 1 }).joueurs[0].plateau;
-    expect(p.cases.length).toBe(5);
-    expect(p.cases.every((l) => l.length === 7)).toBe(true);
+    expect(p.cases.length).toBe(4);
+    expect(p.cases.every((l) => l.length === 6)).toBe(true);
   });
 
   it('une case intérieure a 6 voisins, un coin en a 2 ou 3', () => {
@@ -54,12 +54,12 @@ describe("Règles d'empilement", () => {
     expect(ok(p, 0, 3, R)).toBe(false); // un arbre complet ne porte rien
   });
 
-  it('bâtiment : rouge sur un tronc, un feuillage, une roche ou un bâtiment seul', () => {
+  it('bâtiment : rouge sur un tronc, une roche ou un bâtiment seul, jamais sur un feuillage', () => {
     const p = plateau({ '0,0': [G], '0,1': [M], '0,2': [R], '0,3': [G, G], '0,4': [G, R], '0,5': [V] });
     expect(ok(p, 0, 0, R)).toBe(true);
     expect(ok(p, 0, 1, R)).toBe(true);
     expect(ok(p, 0, 2, R)).toBe(true);
-    expect(ok(p, 0, 5, R)).toBe(true);
+    expect(ok(p, 0, 5, R)).toBe(false); // pas sur un feuillage
     expect(ok(p, 0, 3, R)).toBe(false); // trop haut
     expect(ok(p, 0, 4, R)).toBe(false); // déjà 2 de haut
     expect(ok(p, 0, 2, G)).toBe(false); // rien d'autre que du rouge sur un rouge

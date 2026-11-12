@@ -18,10 +18,10 @@ function cliquerCase(conteneur, cle) {
 }
 
 describe('Plateau', () => {
-  it('affiche 35 cases (5 × 7)', () => {
+  it('affiche 24 cases (4 × 6)', () => {
     const e = creerPartie({ nbJoueurs: 1, graine: 1 });
     const { container } = render(<Plateau plateau={e.joueurs[0].plateau} definitions={e.definitions} />);
-    expect(container.querySelectorAll('[data-case]')).toHaveLength(35);
+    expect(container.querySelectorAll('[data-case]')).toHaveLength(24);
   });
 });
 
@@ -44,11 +44,11 @@ describe('Partie locale', () => {
     fireEvent.click(screen.getByLabelText('Tas 1'));
     const fin = screen.getByText('Fin du tour');
     expect(fin.disabled).toBe(true);
-    expect(container.querySelectorAll('.case.cliquable')).toHaveLength(35);
+    expect(container.querySelectorAll('.case.cliquable')).toHaveLength(24);
 
     cliquerCase(container, '0,0');
     cliquerCase(container, '2,2');
-    cliquerCase(container, '4,4');
+    cliquerCase(container, '3,4');
     expect(container.querySelectorAll('[data-case="0,0"] polygon').length).toBeGreaterThan(1);
     expect(fin.disabled).toBe(false);
 

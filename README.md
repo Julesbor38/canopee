@@ -122,7 +122,7 @@ Les ordinateurs jouent côté serveur. Une salle sans humain connecté est suppr
 
 ```bash
 npm install
-npm test                 # 85 tests verts
+npm test                 # 99 tests verts
 npm run demo -- 4 2026   # partie automatique à 4 dans le terminal
 npm start                # http://localhost:3000 (local et distant)
 ```
@@ -130,7 +130,7 @@ npm start                # http://localhost:3000 (local et distant)
 ## Règles implémentées
 
 ### Matériel
-- Plateau hexagonal de 5 cases de haut sur 7 de large par joueur.
+- Plateau hexagonal de 4 cases de haut sur 6 de large par joueur.
 - Sac de pions de 6 couleurs : bleu (rivière), gris (montagne), marron (tronc),
   vert (feuillage), jaune (prairie), rouge (bâtiment).
 - 5 tas de 3 pions au centre, 5 cartes animaux visibles.
@@ -146,8 +146,8 @@ npm start                # http://localhost:3000 (local et distant)
 | Bleu, jaune | case vide uniquement ; rien ne se pose dessus |
 | Gris | vide, 1 ou 2 gris (montagne de 3 maximum) |
 | Marron | vide ou 1 marron |
-| Vert | vide, 1 ou 2 marron ; seul un bâtiment peut se poser sur un vert seul |
-| Rouge | vide, ou sur un bloc seul au choix : gris, marron, vert ou rouge (le socle n'a pas d'incidence) |
+| Vert | vide, 1 ou 2 marron ; rien ne se pose sur un vert |
+| Rouge | vide, ou sur un bloc seul au choix : gris, marron ou rouge, jamais sur un vert (le socle n'a pas d'incidence) |
 
 Une case qui porte un cube animal ne peut plus rien recevoir (ni pion, ni cube).
 
@@ -162,38 +162,38 @@ Une case qui porte un cube animal ne peut plus rien recevoir (ni pion, ni cube).
   augmente avec le plateau qui se remplit). La carte rapporte la somme des gains des animaux posés.
   Chaque carte n'existe qu'en un exemplaire (30 cartes).
 
-| Carte | Motif | Gain par animal | Total |
+| Carte | Motif (en gras : case qui reçoit le cube) | Gain par animal | Total |
 | --- | --- | --- | --- |
-| Grenouille | rivière + prairie | +2 +3 +4 +5 | 14 |
-| Lapin | prairie + prairie | +2 +3 +4 +5 | 14 |
-| Coccinelle | prairie + arbre 1 | +2 +3 +4 +5 +6 | 20 |
-| Martin-pêcheur | rivière + rivière + rivière | +4 +5 +6 | 15 |
-| Cigogne | rivière + bâtiment | +4 +5 +6 | 15 |
-| Marmotte | montagne 1 + prairie + prairie | +4 +5 +6 | 15 |
-| Castor | rivière + arbre 1 + rivière | +4 +5 +6 | 15 |
-| Canard | rivière + rivière + prairie | +4 +5 +6 | 15 |
-| Tortue | rivière + rivière + montagne 1 | +4 +5 +6 | 15 |
-| Escargot | prairie + prairie + prairie | +4 +5 +6 | 15 |
-| Serpent | rivière + prairie + montagne 1 | +4 +5 +6 | 15 |
-| Hérisson | bâtiment + prairie | +4 +5 +6 +7 | 22 |
-| Chamois | montagne 1 + montagne 2 | +4 +5 +6 +7 | 22 |
-| Écureuil | arbre 1 + arbre 2 | +4 +5 +6 +7 | 22 |
-| Sanglier | arbre 1 + prairie + arbre 1 | +4 +5 +6 +7 | 22 |
-| Lézard | prairie + montagne 2 | +4 +5 +6 +7 | 22 |
-| Renard | prairie + prairie + arbre 2 | +5 +7 +9 | 21 |
-| Loutre | rivière + rivière + arbre 2 | +5 +7 +9 | 21 |
-| Saumon | rivière + rivière + montagne 2 | +5 +7 +9 | 21 |
-| Aigle | prairie + montagne 3 | +6 +8 | 14 |
-| Souris | bâtiment + bâtiment | +6 +8 | 14 |
-| Abeille | buisson (arbre 1) entouré de 3 prairies, animal sur le buisson | +5 +6 +7 | 18 |
-| Chauve-souris | bâtiment + arbre 2 | +6 +8 +10 | 24 |
-| Papillon | prairie + arbre 1 + bâtiment | +6 +8 +10 | 24 |
-| Bouquetin | montagne 2 + montagne 3 | +7 +9 | 16 |
-| Paon | prairie + arbre 3 + prairie | +7 +9 | 16 |
-| Ours | montagne 2 + arbre 3 | +7 +9 +11 | 27 |
-| Cerf | arbre 2 + arbre 2 + prairie | +7 +9 +11 | 27 |
-| Loup | arbre 2 + montagne 1 + arbre 2 | +7 +9 +11 | 27 |
-| Chouette | arbre 3 + arbre 3 | +9 +12 | 21 |
+| Grenouille | **rivière** + prairie | +2 +3 +4 +5 | 14 |
+| Lapin | **prairie** + montagne 1 | +2 +3 +4 +5 | 14 |
+| Coccinelle | prairie + **arbre 1** | +2 +3 +4 +5 +6 | 20 |
+| Canard | **rivière** + prairie + arbre 1 | +4 +5 +6 | 15 |
+| Castor | **rivière** + arbre 1 + arbre 1 | +4 +5 +6 | 15 |
+| Cigogne | **rivière** + bâtiment | +4 +5 +6 | 15 |
+| Escargot | montagne 1 + **prairie** + arbre 1 | +4 +5 +6 | 15 |
+| Loutre | **rivière** + prairie + prairie | +4 +5 +6 | 15 |
+| Marmotte | **montagne 1** + prairie + prairie | +4 +5 +6 | 15 |
+| Serpent | rivière + prairie + **montagne 1** | +4 +5 +6 | 15 |
+| Tortue | **rivière** + montagne 1 + montagne 1 | +4 +5 +6 | 15 |
+| Chamois | montagne 1 + **montagne 2** | +4 +5 +6 +7 | 22 |
+| Écureuil | arbre 1 + **arbre 2** | +4 +5 +6 +7 | 22 |
+| Hérisson | bâtiment + **prairie** | +4 +5 +6 +7 | 22 |
+| Lézard | prairie + **montagne 2** | +4 +5 +6 +7 | 22 |
+| Martin-pêcheur | **rivière** + arbre 2 | +4 +5 +6 +7 | 22 |
+| Sanglier | arbre 1 + **prairie** + arbre 1 | +4 +5 +6 +7 | 22 |
+| Abeille | **arbre 1** + prairie + prairie + prairie | +5 +6 +7 | 18 |
+| Renard | prairie + prairie + **arbre 2** | +5 +7 +9 | 21 |
+| Saumon | **rivière** + montagne 1 + montagne 2 | +5 +7 +9 | 21 |
+| Aigle | prairie + **montagne 3** | +6 +8 | 14 |
+| Chauve-souris | bâtiment + **arbre 2** | +6 +8 +10 | 24 |
+| Papillon | **prairie** + arbre 1 + bâtiment | +6 +8 +10 | 24 |
+| Souris | **bâtiment** + prairie + prairie | +6 +8 +10 | 24 |
+| Bouquetin | montagne 2 + **montagne 3** | +7 +9 | 16 |
+| Paon | prairie + **arbre 3** + prairie | +7 +9 | 16 |
+| Cerf | arbre 2 + arbre 2 + **prairie** | +7 +9 +11 | 27 |
+| Loup | arbre 2 + **montagne 1** + arbre 2 | +7 +9 +11 | 27 |
+| Ours | montagne 2 + **arbre 3** | +7 +9 +11 | 27 |
+| Chouette | **arbre 3** + arbre 2 + arbre 1 | +9 +12 | 21 |
 
   Difficulté = somme des coûts des cases (prairie, rivière : 1 ; montagne / arbre de hauteur
   1, 2, 3 : 1 ; 2,5 ; 4,5 ; bâtiment : 3) + 0,5 pour une forme à 3 cases.
@@ -206,19 +206,22 @@ de réalisations (2 à 5). Exemples : Aigle (prairie accolée à une montagne de
 Coccinelle (prairie accolée à un arbre d'1 pion, ×5). Liste complète dans `rules.config.js`.
 
 ### Fin de partie
-Dès qu'un joueur ne peut plus poser de pion, ou qu'il n'y a plus de tas à prendre.
+Quand un joueur ne peut plus poser de pion, il défausse les pions impossibles à poser, peut encore
+compléter ses animaux et finir son tour, puis chacun des autres joueurs joue un dernier tour.
+La partie s'arrête aussi s'il n'y a plus aucun tas à prendre.
 Les scores sont alors calculés pour chaque joueur.
 
 ## Points non tranchés (valeurs par défaut, `TODO: à valider`)
-1. Composition du sac (240 pions) : 46 bleu, 46 gris, 42 marron, 38 vert, 38 jaune, 30 rouge.
+1. Composition du sac (120 pions, comme le jeu d'origine) : 23 bleu, 23 gris, 21 marron, 19 vert, 19 jaune, 15 rouge.
 2. Rivières : seule la plus longue compte ; longueur = nombre de cases du groupe connexe.
 3. Cartes : 5 visibles, 1 exemplaire de chaque (30 cartes), 4 cartes en cours maximum, 1 par tour, prise avant ou après le tas.
-4. Motifs : les 6 rotations sont acceptées ; seule la case cible doit être libre de cube.
-5. Cube animal : posé sur la case la plus à droite du motif, sauf si la carte fixe sa case (`cible`) : animaux aquatiques sur la rivière, abeille sur le buisson, renard et papillon sur la prairie, marmotte sur la montagne.
+4. Motifs : les 6 rotations et les images miroir sont acceptées (seul compte quelle case touche quelle case) ; seule la case cible doit être libre de cube ; la case cible est toujours d'un type unique dans son motif, pour qu'un même groupe de cases ne donne qu'un animal.
+5. Cube animal : posé sur la case la plus à droite du motif, sauf si la carte fixe sa case (`cible`), par exemple les animaux aquatiques sur la rivière (case en gras dans le tableau des cartes).
 6. Barème animaux : coûts des cases, supplément de forme et progression (voir ci-dessus).
-7. Fin de partie immédiate (pas de fin de manche pour égaliser le nombre de tours).
-8. Les 28 cartes autres que l'Aigle et la Coccinelle sont des créations.
-9. Serveur : une salle abandonnée (aucun humain connecté) est supprimée après une heure ;
+7. Ordre des tours tiré au sort en début de partie (`ordreAleatoire`).
+8. Fin de partie : un dernier tour pour chacun des autres joueurs (`finDePartie: 'immediate'` pour arrêter aussitôt).
+9. Les 28 cartes autres que l'Aigle et la Coccinelle sont des créations.
+10. Serveur : une salle abandonnée (aucun humain connecté) est supprimée après une heure ;
    la partie démarre avec les joueurs présents (de 1 à 4) ; pas de nouvel arrivant une fois commencée.
-10. Mode distant : la session (salle + jeton) est mémorisée dans le navigateur pour la reprise ;
+11. Mode distant : la session (salle + jeton) est mémorisée dans le navigateur pour la reprise ;
     l'hôte est le créateur de la salle et ne peut pas être remplacé.

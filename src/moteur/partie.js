@@ -59,6 +59,10 @@ export function creerPartie({ nbJoueurs, graine = Date.now(), noms = [], config,
   }
   rng = melanger(pioche, rng);
 
+  // ordre des tours : liste des index de joueurs, du premier au dernier à jouer
+  const ordre = Array.from({ length: nbJoueurs }, (_, i) => i);
+  if (cfg.ordreAleatoire) rng = melanger(ordre, rng);
+
   const etat = {
     graine,
     rng,
@@ -73,17 +77,26 @@ export function creerPartie({ nbJoueurs, graine = Date.now(), noms = [], config,
       plateau: creerPlateau(cfg.plateau.lignes, cfg.plateau.colonnes),
       cartes: [], // { uid, id, cubesPoses }
     })),
-    joueurCourant: 0,
+    ordre,
+    joueurCourant: ordre[0],
     tour: 1,
     phase: PHASES.CHOIX,
     main: [], // pions à poser ce tour-ci
     cartesPrisesCeTour: 0,
+    derniersTours: null, // { declencheur, raison } dès qu'un joueur ne peut plus poser de pion
+    defausseCeTour: 0, // pions défaussés ce tour-ci (impossibles à poser)
     finDePartie: null, // { raison, scores }
     journal: [],
   };
+  etat.journal.push(`Ordre de jeu : ${ordre.map((i) => etat.joueurs[i].nom).join(', ')}`);
   for (let i = 0; i < cfg.nbTas; i++) etat.tas.push(piocherTas(etat));
   for (let i = 0; i < cfg.cartes.visibles; i++) etat.cartesVisibles.push(piocherCarte(etat));
   return etat;
+}
+
+/** Ordre des tours (index des joueurs, du premier au dernier à jouer). */
+export function ordreDeJeu(etat) {
+  return etat.ordre ?? etat.joueurs.map((_, i) => i);
 }
 
 /** Scores de tous les joueurs. */
@@ -102,6 +115,24 @@ function terminer(etat, raison) {
 function mainJouable(etat) {
   const p = etat.joueurs[etat.joueurCourant].plateau;
   return etat.main.some((c) => casesPossibles(p, c, etat.config).length > 0);
+}
+
+/** Le joueur courant ne peut plus poser aucun pion de sa main.
+ *  Fin « dernier tour » : il défausse ces pions, peut encore poser des animaux et finir son tour,
+ *  puis chacun des autres joueurs joue un dernier tour. Fin « immédiate » : la partie s'arrête. */
+function plusDePose(etat, joueur) {
+  const raison = `${joueur.nom} ne peut plus poser de pion`;
+  if (etat.config.finDePartie === 'immediate') {
+    terminer(etat, raison);
+    return;
+  }
+  etat.defausseCeTour = (etat.defausseCeTour ?? 0) + etat.main.length;
+  etat.journal.push(`${joueur.nom} défausse ${etat.main.length} pion(s) impossible(s) à poser`);
+  etat.main = [];
+  if (!etat.derniersTours) {
+    etat.derniersTours = { declencheur: etat.joueurCourant, raison };
+    etat.journal.push(`${raison} : chaque joueur joue un dernier tour`);
+  }
 }
 
 /** Cartes non terminées d'un joueur. */
@@ -169,7 +200,7 @@ export function appliquerAction(etatInitial, indexJoueur, action) {
       etat.tas[action.tas] = piocherTas(etat); // le tas est aussitôt remplacé
       etat.phase = PHASES.PLACEMENT;
       etat.journal.push(`${joueur.nom} prend le tas ${action.tas + 1} (${tas.join(', ')})`);
-      if (!mainJouable(etat)) terminer(etat, `${joueur.nom} ne peut plus poser de pion`);
+      if (!mainJouable(etat)) plusDePose(etat, joueur);
       return { ok: true, etat };
     }
 
@@ -187,9 +218,7 @@ export function appliquerAction(etatInitial, indexJoueur, action) {
       if (!v.ok) return erreur(v.raison);
       poser(joueur.plateau, action.ligne, action.colonne, couleur, cfg);
       etat.main.splice(action.pion, 1);
-      if (etat.main.length && !mainJouable(etat)) {
-        terminer(etat, `${joueur.nom} ne peut plus poser de pion`);
-      }
+      if (etat.main.length && !mainJouable(etat)) plusDePose(etat, joueur);
       return { ok: true, etat };
     }
 
@@ -212,11 +241,19 @@ export function appliquerAction(etatInitial, indexJoueur, action) {
     case 'finTour': {
       if (etat.phase !== PHASES.PLACEMENT) return erreur("Prenez d'abord un tas");
       if (etat.main.length) return erreur('Posez tous vos pions avant de finir le tour');
-      etat.joueurCourant = (etat.joueurCourant + 1) % etat.joueurs.length;
-      if (etat.joueurCourant === 0) etat.tour++;
+      const ordre = ordreDeJeu(etat);
+      etat.joueurCourant = ordre[(ordre.indexOf(etat.joueurCourant) + 1) % ordre.length];
+      if (etat.joueurCourant === ordre[0]) etat.tour++;
       etat.phase = PHASES.CHOIX;
       etat.cartesPrisesCeTour = 0;
-      if (etat.tas.every((t) => !t)) terminer(etat, 'Plus aucun tas à prendre');
+      etat.defausseCeTour = 0;
+      // le tour revient à celui qui a déclenché la fin : chacun a joué son dernier tour
+      if (etat.derniersTours && etat.joueurCourant === etat.derniersTours.declencheur) {
+        const { raison } = etat.derniersTours;
+        terminer(etat, etat.joueurs.length > 1 ? `${raison}, puis chacun a joué un dernier tour` : raison);
+      } else if (etat.tas.every((t) => !t)) {
+        terminer(etat, 'Plus aucun tas à prendre');
+      }
       return { ok: true, etat };
     }
 
